@@ -33,7 +33,7 @@ export async function vendorLogin(alias: string, pin: string) {
   await supabaseAdmin.from('login_attempts').insert([{ alias, ip_address: ip }]);
 
   // 2. Auth Logic
-  const normalizedAlias = alias.toLowerCase();
+  const normalizedAlias = alias.replace(/^@/, '').toLowerCase();
   const { data: vendor, error } = await supabaseAdmin
     .from('vendors')
     .select('*')
