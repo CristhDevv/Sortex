@@ -33,10 +33,11 @@ export async function vendorLogin(alias: string, pin: string) {
   await supabaseAdmin.from('login_attempts').insert([{ alias, ip_address: ip }]);
 
   // 2. Auth Logic
+  const normalizedAlias = alias.toLowerCase();
   const { data: vendor, error } = await supabaseAdmin
     .from('vendors')
     .select('*')
-    .eq('alias', alias)
+    .ilike('alias', normalizedAlias)
     .single();
 
   if (error || !vendor) return { error: 'Vendedor no encontrado' };

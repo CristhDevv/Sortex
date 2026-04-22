@@ -53,7 +53,7 @@ export default function VendorsPage() {
     }
 
     if (editingVendor) {
-      const updateData: any = { name, alias, phone };
+      const updateData: any = { name, alias: alias.toLowerCase(), phone };
       if (pin) updateData.pin = hashedPin;
 
       const { error } = await supabase
@@ -65,7 +65,7 @@ export default function VendorsPage() {
     } else {
       const { error } = await supabase
         .from('vendors')
-        .insert([{ name, alias, phone, pin: hashedPin, is_active: true }]);
+        .insert([{ name, alias: alias.toLowerCase(), phone, pin: hashedPin, is_active: true }]);
 
       if (error) alert(error.message);
     }
