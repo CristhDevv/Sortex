@@ -15,56 +15,88 @@ const JWT_SECRET = new TextEncoder().encode(
 );
 
 export async function vendorLogin(alias: string, pin: string) {
-  const ip = headers().get('x-forwarded-for') || 'unknown';
+  console.log("--- INICIO LOGIN VENDEDOR ---");
+  console.log("Alias recibido:", alias);
+  
+  try {
+    const ip = headers().get('x-forwarded-for') || 'unknown';
+    console.log("IP detectada:", ip);
 
-  // 1. Rate Limiting Check
-  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-  const { count } = await supabaseAdmin
-    .from('login_attempts')
-    .select('*', { count: 'exact', head: true })
-    .eq('alias', alias)
-    .gte('attempted_at', fiveMinutesAgo);
+    // 1. Rate Limiting Check
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const { count, error: countError } = await supabaseAdmin
+      .from('login_attempts')
+      .select('*', { count: 'exact', head: true })
+      .eq('alias', alias)
+      .gte('attempted_at', fiveMinutesAgo);
 
-  if ((count || 0) >= 5) {
-    return { error: 'Demasiados intentos. Intenta en 5 minutos.' };
+    if (countError) console.error("Error al consultar intentos:", countError);
+
+    if ((count || 0) >= 5) {
+      console.log("Bloqueado por rate limiting:", alias);
+      return { error: 'Demasiados intentos. Intenta en 5 minutos.' };
+    }
+
+    // Record attempt
+    const { error: insertError } = await supabaseAdmin
+      .from('login_attempts')
+      .insert([{ alias, ip_address: ip }]);
+    
+    if (insertError) console.error("Error al insertar intento:", insertError);
+    else console.log("Intento registrado con éxito");
+
+    // 2. Auth Logic
+    const normalizedAlias = alias.replace(/^@/, '').toLowerCase();
+    console.log("Buscando vendedor:", normalizedAlias);
+    
+    const { data: vendor, error: vendorError } = await supabaseAdmin
+      .from('vendors')
+      .select('*')
+      .ilike('alias', normalizedAlias)
+      .single();
+
+    if (vendorError || !vendor) {
+      console.log("Vendedor no encontrado:", normalizedAlias);
+      return { error: 'Vendedor no encontrado' };
+    }
+    
+    if (!vendor.is_active) {
+      console.log("Vendedor inactivo:", normalizedAlias);
+      return { error: 'Tu cuenta está desactivada' };
+    }
+
+    console.log("Comparando PIN...");
+    const isPinValid = await bcrypt.compare(pin, vendor.pin);
+    if (!isPinValid) {
+      console.log("PIN incorrecto para:", normalizedAlias);
+      return { error: 'PIN incorrecto' };
+    }
+
+    console.log("Login exitoso, generando sesión...");
+
+    // 3. Clear attempts on success
+    await supabaseAdmin.from('login_attempts').delete().eq('alias', alias);
+
+    // 4. Generate JWT
+    const token = await new SignJWT({ id: vendor.id, alias: vendor.alias, role: 'vendor' })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('24h')
+      .sign(JWT_SECRET);
+
+    cookies().set('vendor_session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24,
+      path: '/',
+    });
+
+    return { success: true };
+  } catch (err: any) {
+    console.error("CRASH EN SERVER ACTION:", err.message);
+    return { error: 'Error interno del servidor' };
   }
-
-  // Record attempt
-  await supabaseAdmin.from('login_attempts').insert([{ alias, ip_address: ip }]);
-
-  // 2. Auth Logic
-  const normalizedAlias = alias.replace(/^@/, '').toLowerCase();
-  const { data: vendor, error } = await supabaseAdmin
-    .from('vendors')
-    .select('*')
-    .ilike('alias', normalizedAlias)
-    .single();
-
-  if (error || !vendor) return { error: 'Vendedor no encontrado' };
-  if (!vendor.is_active) return { error: 'Tu cuenta está desactivada' };
-
-  const isPinValid = await bcrypt.compare(pin, vendor.pin);
-  if (!isPinValid) return { error: 'PIN incorrecto' };
-
-  // 3. Clear attempts on success
-  await supabaseAdmin.from('login_attempts').delete().eq('alias', alias);
-
-  // 4. Generate JWT
-  const token = await new SignJWT({ id: vendor.id, alias: vendor.alias, role: 'vendor' })
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime('24h')
-    .sign(JWT_SECRET);
-
-  cookies().set('vendor_session', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24,
-    path: '/',
-  });
-
-  return { success: true };
 }
 
 export async function getVendorSession() {
