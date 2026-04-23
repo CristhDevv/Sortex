@@ -7,7 +7,7 @@ import {
   updateLottery, 
   toggleLotteryActive 
 } from '@/app/actions/lotteryActions';
-import { Plus, Power, Edit3, XCircle, Ticket, Coins, Percent, Clock, Calendar } from 'lucide-react';
+import { Plus, Power, Edit3, XCircle, Ticket, Coins, Percent, Clock, Calendar, CheckCircle2, XOctagon } from 'lucide-react';
 
 export default function OwnerLotteriesPage() {
   const [lotteries, setLotteries] = useState<any[]>([]);
@@ -100,176 +100,195 @@ export default function OwnerLotteriesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-zinc-950 p-4 sm:p-6 space-y-6">
       {/* Header */}
-      <div className="bg-white px-6 py-8 border-b border-gray-100 mb-8 flex justify-between items-center">
+      <div className="flex justify-between items-center bg-zinc-900 border border-zinc-800 p-4 sm:p-6 rounded-2xl">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Loterías</h1>
-          <p className="text-gray-500 font-medium">Configuración de sorteos y premios</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Loterías</h1>
+          <p className="text-zinc-500 font-medium text-xs sm:text-sm mt-1">Configuración de sorteos y premios</p>
         </div>
         <button 
           onClick={() => { resetForm(); setIsModalOpen(true); }}
-          className="bg-indigo-600 text-white p-4 rounded-2xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all"
+          className="bg-indigo-500 text-white p-3 sm:p-4 rounded-xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-600 active:scale-95 transition-all"
         >
           <Plus size={24} />
         </button>
       </div>
 
       {/* Lotteries List */}
-      <div className="px-6 space-y-6">
-        {lotteries.length === 0 && !loading && (
-          <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-100">
-            <Ticket className="mx-auto text-gray-200 mb-4" size={48} />
-            <p className="text-gray-400 font-bold">No hay loterías configuradas</p>
+      <div className="space-y-6">
+        {loading ? (
+          <div className="text-center py-20 text-zinc-500 animate-pulse text-sm font-bold tracking-widest uppercase">
+            Cargando loterías...
+          </div>
+        ) : lotteries.length === 0 ? (
+          <div className="text-center py-20 bg-zinc-900 rounded-3xl border border-zinc-800 border-dashed">
+            <Ticket className="mx-auto text-zinc-700 mb-4" size={48} />
+            <p className="text-zinc-500 font-bold text-sm">No hay loterías configuradas</p>
+          </div>
+        ) : (
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
+            <div className="divide-y divide-zinc-800">
+              {lotteries.map(lottery => (
+                <div key={lottery.id} className={`p-4 sm:p-6 hover:bg-zinc-800/50 transition-colors ${!lottery.is_active ? 'opacity-50 grayscale' : ''}`}>
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                    
+                    {/* Left: Info */}
+                    <div className="flex items-center gap-4">
+                      <div className={`p-3 rounded-xl border flex-shrink-0 ${lottery.is_active ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-zinc-800 border-zinc-700'}`}>
+                        <Ticket className={lottery.is_active ? 'text-indigo-400' : 'text-zinc-500'} size={24} />
+                      </div>
+                      <div>
+                        <h3 className="text-lg sm:text-xl font-black text-white leading-tight mb-2">{lottery.name}</h3>
+                        <div className="flex flex-wrap gap-2">
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest border ${lottery.frequency === 'daily' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
+                            {lottery.frequency === 'daily' ? 'Diaria' : 'Mensual'}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest border ${lottery.draw_time === 'midday' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'}`}>
+                            {lottery.draw_time === 'midday' ? 'Mediodía' : 'Noche'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Middle: Stats */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 flex-1 lg:mx-8">
+                      <div>
+                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Premio Mayor</p>
+                        <p className="text-sm sm:text-base font-black text-white">${lottery.prize_cop.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Fracciones</p>
+                        <p className="text-sm sm:text-base font-black text-white">{lottery.pieces_per_ticket}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Precio Frac.</p>
+                        <p className="text-sm sm:text-base font-black text-zinc-300">${lottery.piece_price_cop.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Ganancia Frac.</p>
+                        <p className="text-sm sm:text-base font-black text-indigo-400">${lottery.piece_profit_cop.toLocaleString()}</p>
+                      </div>
+                    </div>
+
+                    {/* Right: Actions */}
+                    <div className="flex gap-2 justify-end">
+                      <button 
+                        onClick={() => handleEdit(lottery)}
+                        className="p-3 rounded-xl bg-zinc-800 text-zinc-400 border border-zinc-700 hover:bg-zinc-700 hover:text-white transition-all"
+                      >
+                        <Edit3 size={20} />
+                      </button>
+                      <button 
+                        onClick={() => handleToggleActive(lottery.id, lottery.is_active)}
+                        className={`p-3 rounded-xl border transition-all ${lottery.is_active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20'}`}
+                      >
+                        <Power size={20} />
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
-
-        {lotteries.map(lottery => (
-          <div key={lottery.id} className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100">
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h3 className="text-2xl font-black text-gray-900 leading-none mb-2">{lottery.name}</h3>
-                <div className="flex gap-2">
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${lottery.frequency === 'daily' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
-                    {lottery.frequency === 'daily' ? 'Diaria' : 'Mensual'}
-                  </span>
-                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${lottery.draw_time === 'midday' ? 'bg-amber-50 text-amber-600' : 'bg-slate-800 text-white'}`}>
-                    {lottery.draw_time === 'midday' ? 'Mediodía' : 'Noche'}
-                  </span>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button 
-                  onClick={() => handleEdit(lottery)}
-                  className="p-4 rounded-2xl bg-gray-50 text-gray-400 hover:text-indigo-600 transition-all"
-                >
-                  <Edit3 size={24} />
-                </button>
-                <button 
-                  onClick={() => handleToggleActive(lottery.id, lottery.is_active)}
-                  className={`p-4 rounded-2xl transition-all ${lottery.is_active ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}
-                >
-                  <Power size={24} />
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-gray-50 p-4 rounded-2xl">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Premio Mayor</p>
-                <p className="text-xl font-black text-gray-900">${lottery.prize_cop.toLocaleString()}</p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-2xl">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Fracciones</p>
-                <p className="text-xl font-black text-gray-900">{lottery.pieces_per_ticket}</p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-2xl">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Precio x Frac.</p>
-                <p className="text-xl font-black text-gray-900">${lottery.piece_price_cop.toLocaleString()}</p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-2xl">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Ganancia x Frac.</p>
-                <p className="text-xl font-black text-indigo-600">${lottery.piece_profit_cop.toLocaleString()}</p>
-              </div>
-            </div>
-          </div>
-        ))}
       </div>
 
       {/* Modal Form */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-[2.5rem] p-10 animate-in slide-in-from-bottom-8 duration-500 overflow-y-auto max-h-[90vh]">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-black text-gray-900">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-zinc-900 border border-zinc-800 w-full max-w-xl rounded-3xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh] shadow-2xl">
+            <div className="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4">
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
                 {editingLottery ? 'Editar Lotería' : 'Nueva Lotería'}
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                <XCircle size={32} />
+              <button onClick={() => setIsModalOpen(false)} className="text-zinc-500 hover:text-white transition-colors">
+                <XCircle size={28} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1 block">Nombre de la Lotería</label>
+                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Nombre de la Lotería</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ej: Lotería de Medellín"
                   required
-                  className="w-full px-6 py-4 bg-gray-50 rounded-2xl font-bold focus:ring-4 focus:ring-indigo-100 border-none transition-all"
+                  className="w-full px-5 py-4 bg-zinc-800 border border-zinc-700 text-white placeholder:text-zinc-600 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1 block">Premio COP</label>
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Premio COP</label>
                   <input
                     type="number"
                     value={prizeCop}
                     onChange={(e) => setPrizeCop(e.target.value)}
                     placeholder="0"
                     required
-                    className="w-full px-6 py-4 bg-gray-50 rounded-2xl font-bold focus:ring-4 focus:ring-indigo-100 border-none transition-all"
+                    className="w-full px-5 py-4 bg-zinc-800 border border-zinc-700 text-white placeholder:text-zinc-600 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1 block">Fracciones x Billete</label>
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Fracciones x Billete</label>
                   <input
                     type="number"
                     value={piecesPerTicket}
                     onChange={(e) => setPiecesPerTicket(e.target.value)}
                     placeholder="Ej: 3"
                     required
-                    className="w-full px-6 py-4 bg-gray-50 rounded-2xl font-bold focus:ring-4 focus:ring-indigo-100 border-none transition-all"
+                    className="w-full px-5 py-4 bg-zinc-800 border border-zinc-700 text-white placeholder:text-zinc-600 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1 block">Precio Fracción</label>
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Precio Fracción</label>
                   <input
                     type="number"
                     value={piecePriceCop}
                     onChange={(e) => setPiecePriceCop(e.target.value)}
                     placeholder="0"
                     required
-                    className="w-full px-6 py-4 bg-gray-50 rounded-2xl font-bold focus:ring-4 focus:ring-indigo-100 border-none transition-all"
+                    className="w-full px-5 py-4 bg-zinc-800 border border-zinc-700 text-white placeholder:text-zinc-600 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1 block">Ganancia Fracción</label>
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Ganancia Fracción</label>
                   <input
                     type="number"
                     value={pieceProfitCop}
                     onChange={(e) => setPieceProfitCop(e.target.value)}
                     placeholder="0"
                     required
-                    className="w-full px-6 py-4 bg-gray-50 rounded-2xl font-bold focus:ring-4 focus:ring-indigo-100 border-none transition-all text-indigo-600"
+                    className="w-full px-5 py-4 bg-zinc-800 border border-zinc-700 text-indigo-400 placeholder:text-zinc-600 rounded-xl font-black focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1 block">Frecuencia</label>
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Frecuencia</label>
                   <select
                     value={frequency}
                     onChange={(e) => setFrequency(e.target.value)}
-                    className="w-full px-6 py-4 bg-gray-50 rounded-2xl font-bold focus:ring-4 focus:ring-indigo-100 border-none transition-all appearance-none"
+                    className="w-full px-5 py-4 bg-zinc-800 border border-zinc-700 text-white rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none"
                   >
                     <option value="daily">Diaria</option>
                     <option value="monthly">Mensual</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1 block">Jornada</label>
+                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Jornada</label>
                   <select
                     value={drawTime}
                     onChange={(e) => setDrawTime(e.target.value)}
-                    className="w-full px-6 py-4 bg-gray-50 rounded-2xl font-bold focus:ring-4 focus:ring-indigo-100 border-none transition-all appearance-none"
+                    className="w-full px-5 py-4 bg-zinc-800 border border-zinc-700 text-white rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none"
                   >
                     <option value="midday">Mediodía</option>
                     <option value="night">Noche</option>
@@ -280,9 +299,9 @@ export default function OwnerLotteriesPage() {
               <button 
                 type="submit"
                 disabled={formLoading}
-                className="w-full mt-4 py-5 bg-indigo-600 text-white rounded-2xl font-black text-xl hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all disabled:opacity-50"
+                className="w-full mt-6 py-4 sm:py-5 bg-indigo-500 text-white rounded-xl font-black text-lg sm:text-xl hover:bg-indigo-600 shadow-lg shadow-indigo-500/20 transition-all disabled:opacity-50 tracking-wide"
               >
-                {formLoading ? 'Guardando...' : editingLottery ? 'ACTUALIZAR LOTERÍA' : 'CREAR LOTERÍA'}
+                {formLoading ? 'GUARDANDO...' : editingLottery ? 'ACTUALIZAR LOTERÍA' : 'CREAR LOTERÍA'}
               </button>
             </form>
           </div>

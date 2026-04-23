@@ -123,212 +123,190 @@ export default function LiquidationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <div className="bg-white px-6 py-8 border-b border-gray-100 mb-8 flex justify-between items-center">
+    <div className="min-h-screen bg-zinc-950 p-4 sm:p-6 space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Liquidaciones</h1>
+          <h1 className="text-2xl font-black text-white tracking-tight">Liquidaciones</h1>
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="mt-2 block px-3 py-1 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold text-gray-700"
+            className="mt-2 block px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-sm font-bold text-zinc-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all w-fit"
           />
         </div>
         
-        <div className="flex space-x-3">
-          <button onClick={exportPDF} className="flex items-center px-4 py-2 bg-rose-600 text-white rounded-xl shadow-lg shadow-rose-100 hover:bg-rose-700 text-sm font-bold active:scale-95 transition-all">
+        <div className="flex gap-3">
+          <button onClick={exportPDF} className="flex items-center justify-center flex-1 sm:flex-none px-4 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-xl hover:bg-rose-500/20 text-xs tracking-widest font-black uppercase active:scale-95 transition-all">
             <FileText className="w-4 h-4 mr-2" /> PDF
           </button>
-          <button onClick={exportExcel} className="flex items-center px-4 py-2 bg-emerald-600 text-white rounded-xl shadow-lg shadow-emerald-100 hover:bg-emerald-700 text-sm font-bold active:scale-95 transition-all">
+          <button onClick={exportExcel} className="flex items-center justify-center flex-1 sm:flex-none px-4 py-2.5 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-xl hover:bg-emerald-500/20 text-xs tracking-widest font-black uppercase active:scale-95 transition-all">
             <TableIcon className="w-4 h-4 mr-2" /> EXCEL
           </button>
         </div>
       </div>
 
-      <div className="px-6 space-y-6">
-        <div className="bg-indigo-600 rounded-[2.5rem] p-8 text-white shadow-xl shadow-indigo-200 mb-8">
-          <p className="text-sm font-bold text-indigo-200 uppercase tracking-widest mb-2">Utilidad Total del Día</p>
-          <p className="text-5xl font-black">${calculateTotal().toLocaleString()}</p>
+      <div className="space-y-6">
+        <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-2xl p-6 text-white shadow-xl shadow-indigo-500/5">
+          <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Utilidad Total del Día</p>
+          <p className="text-4xl font-black text-indigo-400">${calculateTotal().toLocaleString()}</p>
         </div>
 
         {loading ? (
-          <div className="text-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-            <p className="mt-4 text-gray-500 font-bold">Procesando datos...</p>
+          <div className="text-center py-12 text-zinc-500 animate-pulse text-sm font-bold tracking-widest uppercase">
+            Procesando datos...
           </div>
         ) : data.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100">
-            <Calculator className="mx-auto text-gray-200 mb-4" size={48} />
-            <p className="text-gray-400 font-bold">No hay asignaciones para liquidar en esta fecha</p>
+          <div className="text-center py-16 bg-zinc-900 rounded-3xl border border-zinc-800 border-dashed">
+            <Calculator className="mx-auto text-zinc-700 mb-4" size={48} />
+            <p className="text-zinc-500 font-bold text-sm">No hay asignaciones para liquidar en esta fecha</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {data.map((item) => {
-              const liq = item.liquidations?.[0];
-              const middayReport = item.reports?.find((r: any) => r.report_type === 'midday');
-              const nightReport = item.reports?.find((r: any) => r.report_type === 'night');
-              const isMidday = item.lotteries?.draw_time === 'midday';
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
+            <div className="divide-y divide-zinc-800">
+              {data.map((item) => {
+                const liq = item.liquidations?.[0];
+                const isMidday = item.lotteries?.draw_time === 'midday';
 
-              return (
-                <div key={item.id} className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100 hover:border-indigo-100 transition-all flex flex-col justify-between">
-                  <div>
-                    <div className="flex justify-between items-start mb-6">
-                      <div className="flex items-center">
-                        <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center mr-4">
-                          <User className="text-indigo-600" size={24} />
-                        </div>
-                        <div>
-                          <h3 className="text-xl font-black text-gray-900 leading-none mb-1">{item.vendors?.name}</h3>
-                          <p className="text-gray-400 font-medium text-sm">@{item.vendors?.alias}</p>
-                        </div>
+                return (
+                  <div key={item.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-zinc-800/50 transition-colors group gap-4">
+                    {/* Info Block */}
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center flex-shrink-0 border border-zinc-700">
+                        <User className="text-zinc-400" size={20} />
                       </div>
-                      {liq ? (
-                        <div className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border border-green-200">
-                          Liquidado
-                        </div>
-                      ) : (
-                        <div className="bg-amber-50 text-amber-700 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border border-amber-200">
-                          Pendiente
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
-                        <div className="flex items-center">
-                          <Ticket className="text-indigo-600 mr-3" size={20} />
-                          <div>
-                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Lotería</p>
-                            <p className="font-bold text-gray-900">{item.lotteries?.name}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Jornada</p>
-                          <span className={`text-xs font-black uppercase tracking-wider ${isMidday ? 'text-amber-600' : 'text-slate-800'}`}>
-                            {isMidday ? 'Mediodía' : 'Noche'}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm sm:text-base font-black text-white leading-tight">{item.vendors?.name}</h3>
+                          <span className={`px-2 py-0.5 inline-flex text-[9px] uppercase tracking-widest font-black rounded-lg ${
+                            liq 
+                              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
+                              : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                          }`}>
+                            {liq ? 'Liquidado' : 'Pendiente'}
                           </span>
                         </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-gray-50 rounded-2xl">
-                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Fracciones</p>
-                          <p className="text-2xl font-black text-indigo-600">{item.pieces_assigned}</p>
-                        </div>
-                        <div className="p-4 bg-gray-50 rounded-2xl">
-                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Reportes</p>
-                          <div className="flex gap-2 mt-1">
-                            <div title="Mediodía">
-                              {middayReport ? (
-                                <CheckCircle2 className={middayReport.is_on_time ? "text-green-500" : "text-amber-500"} size={24} />
-                              ) : (
-                                <Circle className="text-gray-200" size={24} />
-                              )}
-                            </div>
-                            <div title="Noche">
-                              {nightReport ? (
-                                <CheckCircle2 className={nightReport.is_on_time ? "text-green-500" : "text-amber-500"} size={24} />
-                              ) : (
-                                <Circle className="text-gray-200" size={24} />
-                              )}
-                            </div>
-                          </div>
-                        </div>
+                        <p className="text-xs font-bold text-zinc-500 mt-0.5">@{item.vendors?.alias}</p>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="mt-6 flex items-center justify-between pt-6 border-t border-gray-100">
-                    <div>
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Utilidad Calculada</p>
-                      {liq ? (
-                        <p className="text-2xl font-black text-gray-900">${liq.profit_cop.toLocaleString()}</p>
-                      ) : (
-                        <p className="text-xl font-bold text-gray-300">---</p>
-                      )}
+                    {/* Details Block */}
+                    <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-8 w-full sm:w-auto">
+                      {/* Lottery */}
+                      <div className="hidden sm:block">
+                        <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Lotería</div>
+                        <div className="text-sm font-bold text-zinc-300 flex items-center gap-1.5">
+                          <Ticket size={14} className="text-zinc-500" />
+                          {item.lotteries?.name}
+                        </div>
+                      </div>
+
+                      {/* Turno */}
+                      <span className={`px-2.5 py-1 inline-flex text-[10px] uppercase tracking-widest font-black rounded-lg ${
+                        isMidday 
+                          ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' 
+                          : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                      }`}>
+                        {isMidday ? 'Día' : 'Noche'}
+                      </span>
+
+                      {/* Utility calculated */}
+                      <div className="text-right sm:text-center min-w-[5rem]">
+                        <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Utilidad</div>
+                        {liq ? (
+                          <div className="text-sm font-black text-white">${liq.profit_cop.toLocaleString()}</div>
+                        ) : (
+                          <div className="text-sm font-bold text-zinc-600">---</div>
+                        )}
+                      </div>
+
+                      {/* Action */}
+                      <button 
+                        onClick={() => handleReview(item)}
+                        className={`flex items-center justify-center p-2.5 sm:px-4 sm:py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                          liq
+                            ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white border border-zinc-700'
+                            : 'bg-indigo-500 text-white hover:bg-indigo-600 shadow-lg shadow-indigo-500/20'
+                        }`}
+                      >
+                        <Calculator size={16} className="sm:mr-2" />
+                        <span className="hidden sm:inline">{liq ? 'Revisar' : 'Liquidar'}</span>
+                      </button>
                     </div>
-                    <button 
-                      onClick={() => handleReview(item)}
-                      className="px-6 py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 active:scale-95 transition-all flex items-center shadow-lg shadow-gray-200"
-                    >
-                      <Calculator size={18} className="mr-2" />
-                      {liq ? 'REVISAR' : 'LIQUIDAR'}
-                    </button>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
 
       {/* Review Modal */}
       {reviewing && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2.5rem] max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-6 sm:p-8 border-b border-zinc-800 flex justify-between items-center bg-zinc-950/50">
               <div>
-                <h2 className="text-2xl font-black text-gray-900">Revisión: {reviewing.vendors?.name}</h2>
-                <p className="text-gray-500 font-medium">{reviewing.lotteries?.name} - {reviewing.lotteries?.draw_time === 'midday' ? 'Día' : 'Noche'}</p>
+                <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">Liquidación: {reviewing.vendors?.name}</h2>
+                <p className="text-zinc-500 font-bold text-xs sm:text-sm mt-1">{reviewing.lotteries?.name} - {reviewing.lotteries?.draw_time === 'midday' ? 'Mediodía' : 'Noche'}</p>
               </div>
-              <button onClick={() => setReviewing(null)} className="text-gray-400 hover:text-gray-600 bg-white p-2 rounded-full shadow-sm">
-                <XCircle className="w-8 h-8" />
+              <button onClick={() => setReviewing(null)} className="text-zinc-500 hover:text-white transition-colors p-1">
+                <XCircle size={28} />
               </button>
             </div>
             
-            <div className="flex-1 overflow-y-auto p-8 grid grid-cols-1 md:grid-cols-2 gap-10">
+            <div className="flex-1 overflow-y-auto p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
               <div>
-                <p className="text-[10px] font-black text-gray-400 uppercase mb-4 tracking-widest">Evidencia Fotográfica</p>
+                <p className="text-[10px] font-black text-zinc-500 uppercase mb-4 tracking-widest">Evidencia Fotográfica</p>
                 {photoUrl ? (
-                  <div className="rounded-3xl overflow-hidden border border-gray-100 shadow-sm bg-gray-100">
-                    <img src={photoUrl} alt="Reporte" className="w-full h-auto" />
+                  <div className="rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950 flex items-center justify-center h-64 sm:h-auto">
+                    <img src={photoUrl} alt="Reporte" className="w-full h-full object-contain sm:h-auto" />
                   </div>
                 ) : (
-                  <div className="aspect-[3/4] bg-gray-50 border-2 border-dashed border-gray-200 rounded-3xl flex flex-col items-center justify-center text-gray-300">
-                    <Eye className="w-16 h-16 mb-4" />
-                    <p className="text-base font-bold">Sin foto disponible</p>
+                  <div className="aspect-[3/4] sm:aspect-auto sm:h-64 bg-zinc-950 border border-zinc-800 border-dashed rounded-2xl flex flex-col items-center justify-center text-zinc-700">
+                    <Eye className="w-12 h-12 sm:w-16 sm:h-16 mb-4 text-zinc-800" />
+                    <p className="text-sm font-bold uppercase tracking-widest text-zinc-600">Sin foto disponible</p>
                   </div>
                 )}
               </div>
               
-              <div className="space-y-8 flex flex-col justify-center">
-                <div className="bg-gray-50 p-6 rounded-3xl space-y-4 border border-gray-100">
+              <div className="space-y-6 sm:space-y-8 flex flex-col justify-center">
+                <div className="bg-zinc-950 p-6 rounded-2xl space-y-4 border border-zinc-800">
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-500 font-bold uppercase tracking-wider text-xs">Fracciones Asignadas:</span>
-                    <span className="font-black text-xl text-gray-900">{reviewing.pieces_assigned}</span>
+                    <span className="text-zinc-500 font-black uppercase tracking-widest text-[10px] sm:text-xs">Fracciones Asignadas</span>
+                    <span className="font-black text-xl text-white">{reviewing.pieces_assigned}</span>
                   </div>
-                  <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                    <span className="text-gray-500 font-bold uppercase tracking-wider text-xs">Utilidad x Fracción:</span>
-                    <span className="font-black text-xl text-indigo-600">${reviewing.lotteries?.piece_profit_cop.toLocaleString()}</span>
+                  <div className="flex justify-between items-center pt-4 border-t border-zinc-800">
+                    <span className="text-zinc-500 font-black uppercase tracking-widest text-[10px] sm:text-xs">Utilidad x Fracción</span>
+                    <span className="font-black text-xl text-indigo-400">${reviewing.lotteries?.piece_profit_cop.toLocaleString()}</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase mb-3 tracking-widest ml-1">
-                    Fracciones No Vendidas (Devueltas)
+                  <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 tracking-widest ml-1">
+                    Devueltas (No vendidas)
                   </label>
                   <input
                     type="number"
                     value={unsold}
                     onChange={(e) => setUnsold(Math.max(0, parseInt(e.target.value) || 0))}
                     max={reviewing.pieces_assigned}
-                    className="w-full py-5 px-6 bg-gray-50 border-none rounded-2xl text-3xl font-black text-center focus:ring-4 focus:ring-indigo-100 transition-all text-gray-900"
+                    className="w-full py-4 sm:py-5 px-6 bg-zinc-800 border border-zinc-700 rounded-xl text-2xl sm:text-3xl font-black text-center focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-white placeholder:text-zinc-600"
                   />
-                  <p className="text-center text-gray-400 text-sm font-bold mt-3">
-                    Calculando: {reviewing.pieces_assigned} asignadas - {unsold} devueltas = <span className="text-gray-900">{reviewing.pieces_assigned - unsold} vendidas</span>
+                  <p className="text-center text-zinc-500 text-[10px] sm:text-xs font-bold mt-3 uppercase tracking-widest">
+                    {reviewing.pieces_assigned} asignadas - {unsold} devueltas = <span className="text-white">{reviewing.pieces_assigned - unsold} vendidas</span>
                   </p>
                 </div>
 
-                <div className="bg-indigo-600 p-8 rounded-3xl text-white shadow-xl shadow-indigo-200">
-                  <p className="text-[10px] font-black text-indigo-200 uppercase tracking-widest mb-2">Utilidad Total a Cobrar</p>
-                  <p className="text-5xl font-black">
+                <div className="bg-indigo-500/10 border border-indigo-500/20 p-6 sm:p-8 rounded-2xl text-white">
+                  <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">Total a Cobrar</p>
+                  <p className="text-4xl sm:text-5xl font-black text-indigo-400">
                     ${((reviewing.pieces_assigned - unsold) * reviewing.lotteries?.piece_profit_cop).toLocaleString()}
                   </p>
                 </div>
 
                 <button 
                   onClick={confirmLiquidation}
-                  className="w-full py-5 bg-gray-900 text-white rounded-2xl font-black text-xl hover:bg-gray-800 transition-all shadow-xl shadow-gray-200 active:scale-95"
+                  className="w-full py-4 sm:py-5 bg-indigo-500 text-white rounded-xl font-black text-lg sm:text-xl tracking-wide hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/20 active:scale-95"
                 >
                   CONFIRMAR LIQUIDACIÓN
                 </button>

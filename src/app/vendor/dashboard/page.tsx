@@ -42,7 +42,7 @@ export default function VendorDashboard() {
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-zinc-950">
-      <p className="text-sm text-zinc-500 font-medium tracking-widest uppercase">Cargando...</p>
+      <p className="text-sm text-zinc-500 font-black tracking-widest uppercase animate-pulse">Cargando...</p>
     </div>
   );
 
@@ -58,49 +58,57 @@ export default function VendorDashboard() {
       {/* Header */}
       <header className="flex items-center justify-between px-6 pt-12 pb-6">
         <div>
-          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Sortex · Vendedor</p>
+          <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Sortex · Vendedor</p>
           <h1 className="text-2xl font-black text-white tracking-tight">{vendor?.alias}</h1>
         </div>
         <button
           onClick={handleLogout}
-          className="p-2 rounded-full bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-all"
+          className="p-3 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all shadow-sm"
         >
-          <LogOut className="w-4 h-4" />
+          <LogOut className="w-5 h-5" />
         </button>
       </header>
 
-      <main className="flex-1 px-6 pb-10 space-y-8">
+      <main className="flex-1 px-4 sm:px-6 pb-12 space-y-8">
 
         {/* Cartera del día */}
-        <section className="bg-zinc-900 rounded-2xl p-6 border border-zinc-800 shadow-2xl shadow-indigo-900/10">
-          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4">Total para recaudar hoy</p>
-          {assignments.length > 0 ? (
-            <>
-              <p className="text-5xl font-black text-white tracking-tight">
-                ${totalCartera.toLocaleString()}
-              </p>
-              <p className="text-zinc-500 text-sm mt-1 uppercase font-bold tracking-widest">Cartera Total</p>
-              
-              {/* Desglose rápido de loterías */}
-              <div className="mt-6 flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                {assignments.map(asg => (
-                  <div key={asg.id} className="bg-zinc-800/50 rounded-xl px-4 py-3 border border-zinc-700/50 shrink-0">
-                    <p className="text-[9px] font-black text-zinc-500 uppercase mb-1">{asg.lotteries?.name}</p>
-                    <p className="text-lg font-black text-white">{asg.pieces_assigned} frac.</p>
-                  </div>
-                ))}
+        <section className="bg-zinc-900 rounded-3xl p-6 sm:p-8 border border-zinc-800 shadow-2xl relative overflow-hidden">
+          <div className="relative z-10">
+            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Total para recaudar hoy</p>
+            {assignments.length > 0 ? (
+              <>
+                <p className="text-5xl sm:text-6xl font-black text-white tracking-tight tabular-nums">
+                  ${totalCartera.toLocaleString()}
+                </p>
+                <p className="text-zinc-500 text-[10px] mt-1.5 uppercase font-black tracking-widest">Cartera Total</p>
+                
+                {/* Desglose rápido de loterías */}
+                <div className="mt-8 flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                  {assignments.map(asg => (
+                    <div key={asg.id} className="bg-zinc-800/80 backdrop-blur-sm rounded-2xl px-4 py-3 border border-zinc-700/50 shrink-0 min-w-[100px]">
+                      <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{asg.lotteries?.name}</p>
+                      <p className="text-base font-black text-white">{asg.pieces_assigned} frac.</p>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="py-6">
+                <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs">Sin asignación para hoy.</p>
               </div>
-            </>
-          ) : (
-            <div className="py-4">
-              <p className="text-zinc-500 font-bold italic">Sin asignación para hoy.</p>
-            </div>
-          )}
+            )}
+          </div>
+          {/* Decorative gradients */}
+          <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
         </section>
 
         {/* Reportes por Lotería */}
         <section>
-          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-4">Tus Tareas</p>
+          <div className="flex items-center gap-2 mb-4 px-2">
+            <Ticket className="w-4 h-4 text-indigo-400" />
+            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Tus Tareas</p>
+          </div>
+          
           <div className="space-y-4">
             {assignments.length > 0 ? (
               assignments.map((asg) => {
@@ -113,55 +121,58 @@ export default function VendorDashboard() {
                 return (
                   <div 
                     key={asg.id} 
-                    className={`flex items-center justify-between p-5 rounded-2xl border transition-all ${
+                    className={`flex items-center justify-between p-4 sm:p-5 rounded-2xl border transition-all ${
                       isReported 
-                        ? 'bg-emerald-950/30 border-emerald-800/50' 
+                        ? 'bg-emerald-500/5 border-emerald-500/20' 
                         : late 
-                          ? 'bg-amber-950/30 border-amber-800/50' 
+                          ? 'bg-amber-500/5 border-amber-500/20' 
                           : 'bg-zinc-900 border-zinc-800'
                     }`}
                   >
                     <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                        isReported ? 'bg-emerald-500/20 text-emerald-400' : 'bg-zinc-800 text-zinc-500'
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${
+                        isReported ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
                       }`}>
-                        {isReported ? <CheckCircle2 size={20} /> : <Ticket size={20} />}
+                        {isReported ? <CheckCircle2 size={24} /> : <Ticket size={24} />}
                       </div>
                       <div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-bold text-white">{asg.lotteries?.name}</p>
-                          <span className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase ${
-                            isMidday ? 'bg-amber-500/20 text-amber-500' : 'bg-indigo-500/20 text-indigo-400'
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="text-base sm:text-lg font-black text-white leading-tight">{asg.lotteries?.name}</p>
+                          <span className={`text-[8px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest border ${
+                            isMidday ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
                           }`}>
                             {isMidday ? 'Día' : 'Noche'}
                           </span>
                         </div>
-                        <p className="text-xs text-zinc-500 font-medium">Límite: {limitLabel}</p>
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest flex items-center">
+                          <Clock className="w-3 h-3 mr-1 opacity-50" />
+                          Límite: {limitLabel}
+                        </p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3">
                       {isReported ? (
                         <div className="flex flex-col items-end">
-                          <span className="text-[10px] font-black text-emerald-400 uppercase tracking-wider">Enviado</span>
+                          <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Enviado</span>
                           {asg.reports[0].is_on_time ? (
-                            <span className="text-[8px] text-zinc-500 uppercase">A tiempo</span>
+                            <span className="text-[8px] text-zinc-500 uppercase font-black tracking-widest mt-0.5">A tiempo</span>
                           ) : (
-                            <span className="text-[8px] text-amber-500 uppercase">Tarde</span>
+                            <span className="text-[8px] text-amber-500 uppercase font-black tracking-widest mt-0.5">Tarde</span>
                           )}
                         </div>
                       ) : (
                         <>
                           {late && (
-                            <span className="text-[10px] font-black text-amber-500 uppercase tracking-wider mr-1 text-right leading-tight">Fuera de<br/>tiempo</span>
+                            <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest mr-1 text-right leading-tight hidden sm:block">Fuera de<br/>tiempo</span>
                           )}
                           <Link href={`/vendor/report/${asg.lotteries?.draw_time}?assignment_id=${asg.id}`}>
                             <button
-                              className={`p-3 rounded-xl transition-all active:scale-90 ${
-                                late ? 'bg-amber-500 text-black' : 'bg-indigo-600 text-white'
+                              className={`p-3 sm:p-4 rounded-xl transition-all active:scale-95 shadow-lg ${
+                                late ? 'bg-amber-500 text-zinc-950 hover:bg-amber-400 shadow-amber-500/20' : 'bg-indigo-500 text-white hover:bg-indigo-400 shadow-indigo-500/20'
                               }`}
                             >
-                              <Camera size={20} />
+                              <Camera size={24} />
                             </button>
                           </Link>
                         </>
@@ -171,9 +182,9 @@ export default function VendorDashboard() {
                 );
               })
             ) : (
-              <div className="bg-zinc-900/50 rounded-2xl p-10 border border-zinc-800 border-dashed text-center">
-                <AlertTriangle className="mx-auto text-zinc-700 mb-2" size={32} />
-                <p className="text-zinc-500 text-sm font-medium">No tienes tareas asignadas hoy.</p>
+              <div className="bg-zinc-900 rounded-3xl p-8 border border-zinc-800 border-dashed text-center">
+                <AlertTriangle className="mx-auto text-zinc-700 mb-4" size={40} />
+                <p className="text-zinc-500 text-xs font-black uppercase tracking-widest">No tienes tareas asignadas hoy.</p>
               </div>
             )}
           </div>

@@ -93,36 +93,45 @@ function ReportContent() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6 text-center">
-        <CheckCircle2 className="w-24 h-24 text-green-500 mb-6 animate-bounce" />
-        <h1 className="text-3xl font-black text-gray-900">¡ENVIADO!</h1>
-        <p className="text-gray-500 mt-2">Tu reporte se guardó correctamente.</p>
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6">
+          <CheckCircle2 className="w-12 h-12 text-emerald-400 animate-bounce" />
+        </div>
+        <h1 className="text-3xl font-black text-white tracking-tight">¡ENVIADO!</h1>
+        <p className="text-zinc-500 mt-2 font-bold text-sm">Tu reporte se guardó correctamente.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-zinc-950 flex flex-col">
       {/* Header */}
-      <div className="bg-white p-4 shadow-sm flex items-center">
-        <button onClick={() => router.back()} className="p-2 -ml-2">
-          <ChevronLeft className="w-6 h-6 text-gray-600" />
+      <div className="bg-zinc-900 border-b border-zinc-800 p-4 shadow-sm flex items-center justify-between">
+        <button onClick={() => router.back()} className="p-2 bg-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-colors">
+          <ChevronLeft className="w-6 h-6" />
         </button>
-        <h1 className="flex-1 text-center font-black text-xl text-indigo-600 uppercase">
-          {assignment?.lotteries?.name || 'Reporte'} - {reportType === 'midday' ? 'Mediodía' : 'Noche'}
-        </h1>
+        <div className="text-center flex-1">
+          <h1 className="font-black text-lg text-white uppercase tracking-tight">
+            {assignment?.lotteries?.name || 'Reporte'}
+          </h1>
+          <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+            {reportType === 'midday' ? 'Mediodía' : 'Noche'}
+          </p>
+        </div>
         <div className="w-10"></div>
       </div>
 
-      <main className="flex-1 p-6 flex flex-col space-y-8">
+      <main className="flex-1 p-4 sm:p-6 flex flex-col space-y-6 sm:space-y-8">
         {/* Photo Container */}
-        <div className="flex-1 flex flex-col items-center justify-center border-4 border-dashed border-gray-200 rounded-[3rem] bg-white relative overflow-hidden">
+        <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-zinc-700 rounded-[2.5rem] bg-zinc-900 relative overflow-hidden shadow-2xl">
           {preview ? (
             <img src={preview} alt="Preview" className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <div className="text-center p-8">
-              <Camera className="w-20 h-20 text-gray-200 mx-auto mb-4" />
-              <p className="text-gray-400 font-bold text-lg">SIN FOTO</p>
+              <div className="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Camera className="w-10 h-10 text-zinc-500" />
+              </div>
+              <p className="text-zinc-500 font-black text-sm uppercase tracking-widest">SIN FOTO</p>
             </div>
           )}
           
@@ -137,26 +146,29 @@ function ReportContent() {
         </div>
 
         {/* Action Button */}
-        <div className="space-y-4">
+        <div className="space-y-4 pb-8">
           {!preview ? (
             <label 
               htmlFor="cameraInput"
-              className="w-full py-6 bg-indigo-600 text-white rounded-3xl text-2xl font-black flex items-center justify-center shadow-xl shadow-indigo-100 active:scale-95 transition-all"
+              className="w-full py-5 sm:py-6 bg-indigo-500 text-white rounded-2xl text-xl sm:text-2xl font-black flex items-center justify-center shadow-lg shadow-indigo-500/20 active:scale-95 transition-all cursor-pointer tracking-wide"
             >
-              <Camera className="w-8 h-8 mr-3" />
+              <Camera className="w-7 h-7 sm:w-8 sm:h-8 mr-3" />
               TOMAR FOTO
             </label>
           ) : (
             <button 
               onClick={handleSubmit}
               disabled={loading}
-              className="w-full py-6 bg-green-500 text-white rounded-3xl text-2xl font-black flex items-center justify-center shadow-xl shadow-green-100 active:scale-95 transition-all disabled:opacity-50"
+              className="w-full py-5 sm:py-6 bg-emerald-500 text-white rounded-2xl text-xl sm:text-2xl font-black flex items-center justify-center shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50 tracking-wide"
             >
               {loading ? (
-                <Loader2 className="w-8 h-8 animate-spin" />
+                <div className="flex items-center">
+                  <Loader2 className="w-7 h-7 sm:w-8 sm:h-8 animate-spin mr-3" />
+                  ENVIANDO...
+                </div>
               ) : (
                 <>
-                  <Send className="w-8 h-8 mr-3" />
+                  <Send className="w-7 h-7 sm:w-8 sm:h-8 mr-3" />
                   ENVIAR REPORTE
                 </>
               )}
@@ -166,14 +178,14 @@ function ReportContent() {
           {preview && !loading && (
             <button 
               onClick={() => { setPhoto(null); setPreview(null); }}
-              className="w-full py-4 text-gray-400 font-bold"
+              className="w-full py-4 text-zinc-500 font-black text-xs sm:text-sm uppercase tracking-widest hover:text-white transition-colors"
             >
               TOMAR OTRA FOTO
             </button>
           )}
 
           {error && (
-            <p className="text-red-500 text-center font-bold text-sm bg-red-50 p-3 rounded-xl border border-red-100">
+            <p className="text-rose-500 text-center font-bold text-sm bg-rose-500/10 p-3 rounded-xl border border-rose-500/20">
               {error}
             </p>
           )}
@@ -185,7 +197,11 @@ function ReportContent() {
 
 export default function ReportSubmissionPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50 uppercase font-black text-gray-300">Cargando...</div>}>
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950 uppercase font-black tracking-widest text-zinc-500 text-xs">
+        Cargando...
+      </div>
+    }>
       <ReportContent />
     </Suspense>
   );

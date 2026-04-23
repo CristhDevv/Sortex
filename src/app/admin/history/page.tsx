@@ -52,93 +52,139 @@ export default function HistoryPage() {
   };
 
   const calculateTotals = () => {
-    return data.reduce((sum, item) => sum + item.amount_due_cop, 0);
+    return data.reduce((sum, item) => sum + item.profit_cop, 0);
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-end">
+    <div className="space-y-6 sm:space-y-8 p-4 sm:p-6 bg-zinc-950 min-h-screen">
+      <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Historial de Recaudos</h1>
-          <p className="text-gray-500">Consulta liquidaciones pasadas y métricas de desempeño.</p>
+          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Historial de Recaudos</h1>
+          <p className="text-zinc-500 font-medium text-sm sm:text-base mt-1">Consulta liquidaciones pasadas y métricas de desempeño.</p>
         </div>
         
-        <div className="flex space-x-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100 items-end">
-          <div>
-            <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Desde</label>
-            <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="border-none p-0 focus:ring-0 text-sm font-bold" />
+        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 bg-zinc-900 p-4 sm:p-5 rounded-2xl border border-zinc-800 sm:items-end w-full lg:w-auto">
+          <div className="flex-1 sm:flex-none">
+            <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 tracking-widest ml-1">Desde</label>
+            <input 
+              type="date" 
+              value={startDate} 
+              onChange={e => setStartDate(e.target.value)} 
+              className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-bold" 
+            />
           </div>
-          <div className="border-l border-gray-100 pl-4">
-            <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Hasta</label>
-            <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="border-none p-0 focus:ring-0 text-sm font-bold" />
+          <div className="flex-1 sm:flex-none">
+            <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 tracking-widest ml-1">Hasta</label>
+            <input 
+              type="date" 
+              value={endDate} 
+              onChange={e => setEndDate(e.target.value)} 
+              className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-bold" 
+            />
           </div>
-          <div className="border-l border-gray-100 pl-4">
-            <label className="block text-[10px] font-black text-gray-400 uppercase mb-1">Vendedor</label>
-            <select value={vendorFilter} onChange={e => setVendorFilter(e.target.value)} className="border-none p-0 focus:ring-0 text-sm font-bold bg-transparent">
-              <option value="all">Todos</option>
+          <div className="flex-1 sm:flex-none">
+            <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 tracking-widest ml-1">Vendedor</label>
+            <select 
+              value={vendorFilter} 
+              onChange={e => setVendorFilter(e.target.value)} 
+              className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-bold appearance-none min-w-[200px]"
+            >
+              <option value="all">Todos los vendedores</option>
               {vendors.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
             </select>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard title="Total Recaudado" value={`$${calculateTotals().toLocaleString()}`} icon={<TrendingUp className="w-8 h-8 text-indigo-600" />} bgColor="bg-indigo-50" />
-        <StatCard title="Ventas Realizadas" value={data.length} icon={<Search className="w-8 h-8 text-amber-600" />} bgColor="bg-amber-50" />
-        <StatCard title="Promedio Diario" value={`$${data.length ? Math.round(calculateTotals() / data.length).toLocaleString() : 0}`} icon={<Users className="w-8 h-8 text-green-600" />} bgColor="bg-green-50" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <StatCard 
+          title="Total Recaudado" 
+          value={`$${calculateTotals().toLocaleString()}`} 
+          icon={<TrendingUp className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-400" />} 
+          bgColor="bg-indigo-500/10" 
+          borderColor="border-indigo-500/20"
+        />
+        <StatCard 
+          title="Ventas Realizadas" 
+          value={data.length} 
+          icon={<Search className="w-6 h-6 sm:w-8 sm:h-8 text-amber-400" />} 
+          bgColor="bg-amber-500/10" 
+          borderColor="border-amber-500/20"
+        />
+        <StatCard 
+          title="Promedio Diario" 
+          value={`$${data.length ? Math.round(calculateTotals() / data.length).toLocaleString() : 0}`} 
+          icon={<Users className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-400" />} 
+          bgColor="bg-emerald-500/10" 
+          borderColor="border-emerald-500/20"
+        />
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-gray-400">Analizando datos históricos...</div>
+        <div className="text-center py-20 text-zinc-500 animate-pulse text-sm font-bold tracking-widest uppercase">
+          Analizando datos históricos...
+        </div>
+      ) : data.length === 0 ? (
+        <div className="text-center py-20 bg-zinc-900 rounded-3xl border border-zinc-800 border-dashed">
+          <Calendar className="mx-auto text-zinc-700 mb-4" size={48} />
+          <p className="text-zinc-500 font-bold text-sm">No hay registros en este periodo</p>
+        </div>
       ) : (
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-widest">Fecha</th>
-                <th className="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-widest">Vendedor</th>
-                <th className="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-widest">Vendidas</th>
-                <th className="px-6 py-4 text-right text-xs font-black text-gray-400 uppercase tracking-widest">Monto</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {data.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm font-bold text-gray-600 uppercase">
-                    {format(new Date(item.date + 'T12:00:00'), "d MMM yyyy", { locale: es })}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="font-bold text-gray-900">{item.vendors.name}</div>
-                    <div className="text-xs text-gray-500">@{item.vendors.alias}</div>
-                  </td>
-                  <td className="px-6 py-4 text-sm font-medium">
-                    {item.total_tickets - item.unsold_tickets} / {item.total_tickets}
-                  </td>
-                  <td className="px-6 py-4 text-right font-black text-indigo-600">
-                    ${item.amount_due_cop.toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-              {data.length === 0 && (
-                <tr>
-                  <td colSpan={4} className="px-6 py-20 text-center text-gray-400 italic">No hay registros en este periodo</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        <div className="bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-800 overflow-hidden">
+          <div className="divide-y divide-zinc-800">
+            {data.map((item) => (
+              <div key={item.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-zinc-800/50 transition-colors gap-4">
+                
+                <div className="flex items-center gap-4">
+                  <div className="hidden sm:flex flex-col items-center justify-center bg-zinc-950 p-2.5 rounded-xl border border-zinc-800 min-w-[4rem]">
+                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{format(new Date(item.date + 'T12:00:00'), "MMM", { locale: es })}</span>
+                    <span className="text-lg font-black text-white leading-none mt-0.5">{format(new Date(item.date + 'T12:00:00'), "dd")}</span>
+                  </div>
+
+                  <div>
+                    <div className="text-sm sm:text-base font-black text-white leading-tight">{item.vendors.name}</div>
+                    <div className="text-xs font-bold text-zinc-500 mt-0.5">@{item.vendors.alias}</div>
+                    
+                    <div className="sm:hidden mt-1.5 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                      {format(new Date(item.date + 'T12:00:00'), "d MMM yyyy", { locale: es })}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-10 w-full sm:w-auto border-t border-zinc-800/50 sm:border-0 pt-3 sm:pt-0">
+                  <div className="text-left sm:text-center">
+                    <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Vendidas</div>
+                    <div className="text-sm font-bold text-white bg-zinc-950 px-3 py-1 rounded-lg border border-zinc-800">
+                      {item.pieces_assigned - item.pieces_unsold} / <span className="text-zinc-500">{item.pieces_assigned}</span>
+                    </div>
+                  </div>
+
+                  <div className="text-right">
+                    <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Monto Recaudado</div>
+                    <div className="text-base sm:text-xl font-black text-indigo-400">
+                      ${item.profit_cop.toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
 }
 
-function StatCard({ title, value, icon, bgColor }: any) {
+function StatCard({ title, value, icon, bgColor, borderColor }: any) {
   return (
-    <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm flex items-center space-x-6">
-      <div className={`p-4 ${bgColor} rounded-2xl`}>{icon}</div>
+    <div className="bg-zinc-900 p-5 sm:p-6 rounded-2xl border border-zinc-800 shadow-sm flex items-center gap-4 hover:border-zinc-700 transition-colors">
+      <div className={`p-3 sm:p-4 ${bgColor} border ${borderColor} rounded-xl transition-colors flex-shrink-0`}>
+        {icon}
+      </div>
       <div>
-        <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">{title}</p>
-        <p className="text-2xl font-black text-gray-900">{value}</p>
+        <p className="text-[10px] sm:text-xs font-black uppercase text-zinc-500 tracking-widest mb-0.5">{title}</p>
+        <p className="text-2xl sm:text-3xl font-black text-white">{value}</p>
       </div>
     </div>
   );

@@ -33,40 +33,40 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-10 transform transition-all">
+    <div className="min-h-screen flex items-center justify-center bg-zinc-950 p-4">
+      <div className="max-w-md w-full bg-zinc-900 rounded-3xl border border-zinc-800 shadow-2xl p-8 sm:p-10">
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-black text-indigo-600 tracking-tight">SORTEX</h1>
-          <p className="text-gray-500 mt-2 font-medium">Panel de Administración</p>
+          <h1 className="text-4xl font-black text-white tracking-tight">SORTEX</h1>
+          <p className="text-zinc-500 mt-2 font-black uppercase tracking-widest text-[10px] sm:text-xs">Panel de Administración</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
           {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-sm border border-red-100 animate-shake">
+            <div className="bg-rose-500/10 text-rose-500 p-4 rounded-2xl text-sm border border-rose-500/20 font-bold text-center animate-pulse">
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-black text-gray-400 uppercase mb-2 tracking-widest ml-1">Email</label>
+            <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 tracking-widest ml-1">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="block w-full px-5 py-4 bg-gray-50 border-none rounded-2xl text-lg font-semibold text-gray-900 focus:ring-4 focus:ring-indigo-100 placeholder-gray-400 transition-all"
+              className="block w-full px-5 py-4 bg-zinc-800 border border-zinc-700 rounded-2xl text-base sm:text-lg font-bold text-white focus:ring-2 focus:ring-indigo-500 placeholder-zinc-600 transition-all outline-none"
               placeholder="admin@sortex.com"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-black text-gray-400 uppercase mb-2 tracking-widest ml-1">Contraseña</label>
+            <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 tracking-widest ml-1">Contraseña</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="block w-full px-5 py-4 bg-gray-50 border-none rounded-2xl text-lg font-semibold text-gray-900 focus:ring-4 focus:ring-indigo-100 placeholder-gray-400 transition-all"
+              className="block w-full px-5 py-4 bg-zinc-800 border border-zinc-700 rounded-2xl text-base sm:text-lg font-bold text-white focus:ring-2 focus:ring-indigo-500 placeholder-zinc-600 transition-all outline-none"
               placeholder="••••••••"
             />
           </div>
@@ -74,9 +74,9 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-5 bg-indigo-600 text-white rounded-2xl text-xl font-bold hover:bg-indigo-700 active:scale-95 transition-all shadow-xl shadow-indigo-200 disabled:opacity-50"
+            className="w-full py-5 bg-indigo-500 text-white rounded-2xl text-lg sm:text-xl font-black hover:bg-indigo-600 active:scale-95 transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 tracking-wide mt-4"
           >
-            {loading ? 'Iniciando sesión...' : 'ENTRAR'}
+            {loading ? 'INICIANDO SESIÓN...' : 'ENTRAR'}
           </button>
         </form>
       </div>

@@ -60,74 +60,80 @@ export default function AdminDashboard() {
   }, []);
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-3xl font-bold text-gray-800">Panel de Control</h1>
+    <div className="space-y-6 sm:space-y-8 p-4 sm:p-6 bg-zinc-950 min-h-screen">
+      <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Panel de Control</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         <StatCard 
           title="Vendedores Activos" 
           value={stats.vendors} 
-          icon={<Users className="w-8 h-8 text-indigo-600" />}
-          bgColor="bg-indigo-50"
+          icon={<Users className="w-6 h-6 sm:w-8 sm:h-8 text-indigo-400" />}
+          bgColor="bg-indigo-500/10"
+          borderColor="border-indigo-500/20"
         />
         <StatCard 
           title="Asignaciones Hoy" 
           value={stats.assignments} 
-          icon={<ClipboardList className="w-8 h-8 text-amber-600" />}
-          bgColor="bg-amber-50"
+          icon={<ClipboardList className="w-6 h-6 sm:w-8 sm:h-8 text-amber-400" />}
+          bgColor="bg-amber-500/10"
+          borderColor="border-amber-500/20"
         />
         <StatCard 
           title="Reportes Recibidos" 
           value={stats.reports} 
-          icon={<CheckCircle className="w-8 h-8 text-green-600" />}
-          bgColor="bg-green-50"
+          icon={<CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-400" />}
+          bgColor="bg-emerald-500/10"
+          borderColor="border-emerald-500/20"
         />
         <StatCard 
           title="Pendientes Hoy" 
           value={stats.pendingReports} 
-          icon={isNearLimit ? <AlertCircle className="w-8 h-8 text-white animate-pulse" /> : <Clock className="w-8 h-8 text-rose-600" />}
-          bgColor={isNearLimit ? "bg-rose-600" : "bg-rose-50"}
-          textColor={isNearLimit ? "text-white" : "text-gray-900"}
-          labelColor={isNearLimit ? "text-rose-100" : "text-gray-500"}
+          icon={isNearLimit ? <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-white animate-pulse" /> : <Clock className="w-6 h-6 sm:w-8 sm:h-8 text-rose-400" />}
+          bgColor={isNearLimit ? "bg-rose-600 shadow-lg shadow-rose-600/20" : "bg-rose-500/10"}
+          borderColor={isNearLimit ? "border-rose-500" : "border-rose-500/20"}
+          textColor={isNearLimit ? "text-white" : "text-white"}
+          labelColor={isNearLimit ? "text-rose-100" : "text-zinc-500"}
         />
       </div>
 
       {isNearLimit && (
-        <div className="bg-rose-600 text-white p-6 rounded-3xl flex items-center justify-between shadow-lg shadow-rose-200">
-          <div className="flex items-center space-x-4">
-            <AlertCircle className="w-10 h-10 text-rose-200" />
+        <div className="bg-rose-500/10 border border-rose-500/30 p-6 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="p-3 bg-rose-500/20 rounded-xl border border-rose-500/30 flex-shrink-0">
+              <AlertCircle className="w-8 h-8 text-rose-400 animate-pulse" />
+            </div>
             <div>
-              <h2 className="text-xl font-black">¡ALERTA DE TIEMPO!</h2>
-              <p className="text-rose-100 font-medium">
+              <h2 className="text-lg sm:text-xl font-black text-rose-400 tracking-tight">¡ALERTA DE TIEMPO!</h2>
+              <p className="text-zinc-300 font-medium text-sm sm:text-base mt-1">
                 Faltan menos de 30 minutos para el cierre de la jornada de {currentJornada === 'midday' ? 'Mediodía' : 'Noche'}.
               </p>
             </div>
           </div>
-          <div className="hidden md:block">
-            <button className="px-6 py-2 bg-white text-rose-600 rounded-xl font-bold">Ver Pendientes</button>
-          </div>
+          <button className="w-full sm:w-auto px-6 py-3.5 bg-rose-500 text-white rounded-xl font-black text-sm uppercase tracking-widest hover:bg-rose-600 transition-colors shadow-lg shadow-rose-500/20 active:scale-95">
+            Ver Pendientes
+          </button>
         </div>
       )}
 
-      <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm">
-        <h2 className="text-xl font-semibold mb-4">Estado del Sistema</h2>
-        <p className="text-gray-600">
-          Actualmente hay {stats.vendors} vendedores activos. Se han realizado {stats.assignments} asignaciones para hoy y se han recibido {stats.reports} reportes fotográficos.
+      <div className="bg-zinc-900 p-6 sm:p-8 rounded-2xl border border-zinc-800 shadow-2xl">
+        <h2 className="text-xs sm:text-sm font-black text-white uppercase tracking-widest mb-4">Estado del Sistema</h2>
+        <p className="text-zinc-400 text-sm sm:text-base leading-relaxed">
+          Actualmente hay <strong className="text-indigo-400">{stats.vendors}</strong> vendedores activos. Se han realizado <strong className="text-amber-400">{stats.assignments}</strong> asignaciones para hoy y se han recibido <strong className="text-emerald-400">{stats.reports}</strong> reportes fotográficos.
         </p>
       </div>
     </div>
   );
 }
 
-function StatCard({ title, value, icon, bgColor, textColor = "text-gray-900", labelColor = "text-gray-500" }: any) {
+function StatCard({ title, value, icon, bgColor, borderColor, textColor = "text-white", labelColor = "text-zinc-500" }: any) {
   return (
-    <div className={`bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center space-x-4`}>
-      <div className={`p-4 ${bgColor} rounded-2xl transition-colors duration-500`}>
+    <div className={`bg-zinc-900 p-5 sm:p-6 rounded-2xl border border-zinc-800 flex items-center gap-4 hover:border-zinc-700 transition-colors`}>
+      <div className={`p-3 sm:p-4 ${bgColor} border ${borderColor} rounded-xl transition-colors duration-500 flex-shrink-0`}>
         {icon}
       </div>
       <div>
-        <p className={`text-[10px] font-black uppercase tracking-widest ${labelColor}`}>{title}</p>
-        <p className={`text-3xl font-black ${textColor}`}>{value}</p>
+        <p className={`text-[10px] sm:text-xs font-black uppercase tracking-widest mb-0.5 ${labelColor}`}>{title}</p>
+        <p className={`text-2xl sm:text-3xl font-black ${textColor}`}>{value}</p>
       </div>
     </div>
   );
