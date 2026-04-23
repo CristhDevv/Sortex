@@ -1,4 +1,3 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
 
@@ -6,57 +5,47 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.VENDOR_JWT_SECRET || 'fallback-secret'
 );
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request: { headers: request.headers } });
-
-  // 1. Supabase Auth for Admin
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name) { return request.cookies.get(name)?.value },
-        set(name, value, options) {
-          request.cookies.set({ name, value, ...options });
-          response = NextResponse.next({ request: { headers: request.headers } });
-          response.cookies.set({ name, value, ...options });
-        },
-        remove(name, options) {
-          request.cookies.set({ name, value: '', ...options });
-          response = NextResponse.next({ request: { headers: request.headers } });
-          response.cookies.set({ name, value: '', ...options });
-        },
-      },
-    }
-  );
-
-  const { data: { session: adminSession } } = await supabase.auth.getSession();
-
-  // 2. Custom JWT Auth for Vendors
-  const vendorToken = request.cookies.get('vendor_session')?.value;
-  let vendorSession = null;
-  if (vendorToken) {
-    try {
-      const { payload } = await jwtVerify(vendorToken, JWT_SECRET);
-      vendorSession = payload;
-    } catch (err) {}
+async function verifyToken(token: string | undefined) {
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    return payload;
+  } catch {
+    return null;
   }
+}
 
+export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
+  const ownerSession = await verifyToken(request.cookies.get('owner_session')?.value);
+  const adminSession = await verifyToken(request.cookies.get('admin_session')?.value);
+  const vendorSession = await verifyToken(request.cookies.get('vendor_session')?.value);
+
+  // Protect /owner routes
+  if (path.startsWith('/owner') && path !== '/owner/login') {
+    if (!ownerSession || ownerSession.role !== 'owner') {
+      return NextResponse.redirect(new URL('/owner/login', request.url));
+    }
+  }
+
   // Protect /admin routes
-  if (!adminSession && path.startsWith('/admin')) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  if (path.startsWith('/admin')) {
+    if (!adminSession || (adminSession.role !== 'admin' && adminSession.role !== 'owner')) {
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
   }
 
-  // Protect /vendor routes (except /vendor/login)
-  if (!vendorSession && path.startsWith('/vendor') && path !== '/vendor/login') {
-    return NextResponse.redirect(new URL('/vendor/login', request.url));
+  // Protect /vendor routes
+  if (path.startsWith('/vendor') && path !== '/vendor/login') {
+    if (!vendorSession || vendorSession.role !== 'vendor') {
+      return NextResponse.redirect(new URL('/vendor/login', request.url));
+    }
   }
 
-  return response;
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/vendor/:path*'],
+  matcher: ['/admin/:path*', '/vendor/:path*', '/owner/:path*'],
 };

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { adminLogin } from '@/app/actions/adminAuthActions';
 import { useRouter } from 'next/navigation';
 
-export default function LoginPage() {
+export default function OwnerLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,24 +25,24 @@ export default function LoginPage() {
       if (result.role === 'owner') {
         router.push('/owner/dashboard');
       } else {
-        router.push('/admin');
+        setError('Acceso denegado. Esta entrada es solo para propietarios.');
+        setLoading(false);
       }
-      // Force a refresh to ensure middleware sees the new session cookies
       router.refresh();
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-10 transform transition-all">
+    <div className="min-h-screen flex items-center justify-center bg-indigo-900 p-4">
+      <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-10">
         <div className="text-center mb-10">
           <h1 className="text-4xl font-black text-indigo-600 tracking-tight">SORTEX</h1>
-          <p className="text-gray-500 mt-2 font-medium">Panel de Administración</p>
+          <p className="text-gray-500 mt-2 font-medium uppercase tracking-widest text-xs">Acceso Propietario</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
           {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-sm border border-red-100 animate-shake">
+            <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-sm border border-red-100">
               {error}
             </div>
           )}
@@ -55,7 +55,7 @@ export default function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="block w-full px-5 py-4 bg-gray-50 border-none rounded-2xl text-lg font-semibold text-gray-900 focus:ring-4 focus:ring-indigo-100 placeholder-gray-400 transition-all"
-              placeholder="admin@sortex.com"
+              placeholder="propietario@sortex.com"
             />
           </div>
 
@@ -76,7 +76,7 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full py-5 bg-indigo-600 text-white rounded-2xl text-xl font-bold hover:bg-indigo-700 active:scale-95 transition-all shadow-xl shadow-indigo-200 disabled:opacity-50"
           >
-            {loading ? 'Iniciando sesión...' : 'ENTRAR'}
+            {loading ? 'Entrando...' : 'INGRESAR'}
           </button>
         </form>
       </div>
