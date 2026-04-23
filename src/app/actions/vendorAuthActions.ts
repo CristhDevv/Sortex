@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies, headers } from 'next/headers';
 import { toZonedTime, format } from 'date-fns-tz';
+import { logAuditEvent } from '@/app/actions/auditActions';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -122,4 +123,78 @@ export async function getVendorAssignmentsToday(vendorId: string) {
   }
   
   return data;
+}
+
+export async function createVendor(data: {
+  name: string;
+  alias: string;
+  phone: string;
+  pin: string;
+}) {
+  const hashedPin = await bcrypt.hash(data.pin, 10);
+  const { data: newVendor, error } = await supabaseAdmin
+    .from('vendors')
+    .insert([{ name: data.name, alias: data.alias.toLowerCase(), phone: data.phone, pin: hashedPin, is_active: true }])
+    .select('id')
+    .single();
+  if (error) return { error: error.message };
+  await logAuditEvent({
+    actor_id: newVendor.id,
+    actor_name: data.name,
+    actor_role: 'admin',
+    action: 'vendor_created',
+    entity: 'vendors',
+    entity_id: newVendor.id,
+    metadata: { name: data.name, alias: data.alias, phone: data.phone }
+  });
+  return { success: true };
+}
+
+export async function updateVendor(id: string, data: {
+  name: string;
+  alias: string;
+  phone: string;
+  pin?: string;
+}) {
+  const updateData: any = { name: data.name, alias: data.alias.toLowerCase(), phone: data.phone };
+  if (data.pin) updateData.pin = await bcrypt.hash(data.pin, 10);
+  const { error } = await supabaseAdmin.from('vendors').update(updateData).eq('id', id);
+  if (error) return { error: error.message };
+  await logAuditEvent({
+    actor_id: id,
+    actor_name: data.name,
+    actor_role: 'admin',
+    action: 'vendor_updated',
+    entity: 'vendors',
+    entity_id: id,
+    metadata: { name: data.name, alias: data.alias, phone: data.phone, pin_changed: !!data.pin }
+  });
+  return { success: true };
+}
+
+export async function toggleVendorStatus(id: string, currentStatus: boolean) {
+  const { error } = await supabaseAdmin
+    .from('vendors')
+    .update({ is_active: !currentStatus })
+    .eq('id', id);
+  if (error) return { error: error.message };
+  await logAuditEvent({
+    actor_id: id,
+    actor_name: 'admin',
+    actor_role: 'admin',
+    action: currentStatus ? 'vendor_deactivated' : 'vendor_activated',
+    entity: 'vendors',
+    entity_id: id,
+    metadata: { new_status: !currentStatus }
+  });
+  return { success: true };
+}
+
+export async function getAllVendors() {
+  const { data, error } = await supabaseAdmin
+    .from('vendors')
+    .select('id, name, alias, phone, is_active, created_at')
+    .order('created_at', { ascending: false });
+  if (error) return { error: error.message };
+  return { data };
 }

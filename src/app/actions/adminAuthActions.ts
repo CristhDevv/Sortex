@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { SignJWT } from 'jose';
 import bcrypt from 'bcryptjs';
 import { createClient } from '@supabase/supabase-js';
+import { logAuditEvent } from '@/app/actions/auditActions';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -47,6 +48,16 @@ export async function adminLogin(email: string, password: string) {
     path: '/',
   });
 
+  await logAuditEvent({
+    actor_id: user.id,
+    actor_name: user.name,
+    actor_role: user.role,
+    action: user.role === 'owner' ? 'owner_login' : 'admin_login',
+    entity: 'admin_users',
+    entity_id: user.id,
+    metadata: { email: user.email }
+  });
+
   return { success: true, role: user.role };
 }
 
@@ -61,6 +72,24 @@ export async function createAdminUser(name: string, email: string, password: str
     .from('admin_users')
     .insert([{ name, email: email.toLowerCase().trim(), password: hashedPassword, role: 'admin', is_active: true }]);
   if (error) return { error: error.message };
+
+  // Obtener el usuario recién creado para el log
+  const { data: newUser } = await supabaseAdmin
+    .from('admin_users')
+    .select('id')
+    .eq('email', email.toLowerCase().trim())
+    .single();
+
+  await logAuditEvent({
+    actor_id: newUser?.id || 'unknown',
+    actor_name: name,
+    actor_role: 'admin',
+    action: 'admin_user_created',
+    entity: 'admin_users',
+    entity_id: newUser?.id,
+    metadata: { email, name }
+  });
+
   return { success: true };
 }
 
@@ -93,6 +122,17 @@ export async function toggleAdminPermission(userId: string, permissionKey: strin
       .from('admin_permissions')
       .insert([{ admin_user_id: userId, permission_key: permissionKey, is_enabled: true }]);
   }
+
+  await logAuditEvent({
+    actor_id: userId,
+    actor_name: 'owner',
+    actor_role: 'owner',
+    action: 'permission_changed',
+    entity: 'admin_permissions',
+    entity_id: userId,
+    metadata: { permission_key: permissionKey, new_value: !currentValue }
+  });
+
   return { success: true };
 }
 
@@ -102,5 +142,16 @@ export async function toggleAdminUserActive(userId: string, currentValue: boolea
     .update({ is_active: !currentValue })
     .eq('id', userId);
   if (error) return { error: error.message };
+
+  await logAuditEvent({
+    actor_id: userId,
+    actor_name: 'owner',
+    actor_role: 'owner',
+    action: currentValue ? 'admin_user_deactivated' : 'admin_user_activated',
+    entity: 'admin_users',
+    entity_id: userId,
+    metadata: { new_status: !currentValue }
+  });
+
   return { success: true };
 }

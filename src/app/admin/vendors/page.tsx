@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
 import { UserPlus, Edit2, Trash2, ShieldCheck, ShieldAlert, History } from 'lucide-react';
-import bcrypt from 'bcryptjs';
+import { getAllVendors, createVendor, updateVendor, toggleVendorStatus } from '@/app/actions/vendorAuthActions';
 
 interface Vendor {
   id: string;
@@ -33,13 +32,12 @@ export default function VendorsPage() {
 
   const fetchVendors = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('vendors')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const result = await getAllVendors();
 
-    if (!error && data) {
-      setVendors(data);
+    if ('data' in result && result.data) {
+      setVendors(result.data as Vendor[]);
+    } else if ('error' in result) {
+      console.error(result.error);
     }
     setLoading(false);
   };
@@ -47,43 +45,39 @@ export default function VendorsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Hash PIN if creating or updating
-    let hashedPin = '';
-    if (pin) {
-      hashedPin = await bcrypt.hash(pin, 10);
-    }
-
+    let result;
     if (editingVendor) {
-      const updateData: any = { name, alias: alias.toLowerCase(), phone };
-      if (pin) updateData.pin = hashedPin;
-
-      const { error } = await supabase
-        .from('vendors')
-        .update(updateData)
-        .eq('id', editingVendor.id);
-
-      if (error) alert(error.message);
+      result = await updateVendor(editingVendor.id, {
+        name,
+        alias,
+        phone,
+        pin: pin || undefined
+      });
     } else {
-      const { error } = await supabase
-        .from('vendors')
-        .insert([{ name, alias: alias.toLowerCase(), phone, pin: hashedPin, is_active: true }]);
-
-      if (error) alert(error.message);
+      result = await createVendor({
+        name,
+        alias,
+        phone,
+        pin
+      });
     }
 
-    setShowModal(false);
-    resetForm();
-    fetchVendors();
+    if ('error' in result) {
+      alert(result.error);
+    } else {
+      setShowModal(false);
+      resetForm();
+      fetchVendors();
+    }
   };
 
   const toggleStatus = async (vendor: Vendor) => {
-    const { error } = await supabase
-      .from('vendors')
-      .update({ is_active: !vendor.is_active })
-      .eq('id', vendor.id);
+    const result = await toggleVendorStatus(vendor.id, vendor.is_active);
 
-    if (!error) {
+    if (!('error' in result)) {
       fetchVendors();
+    } else {
+      alert(result.error);
     }
   };
 

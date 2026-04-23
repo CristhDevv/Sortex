@@ -2,6 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+import { logAuditEvent } from '@/app/actions/auditActions';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,6 +28,21 @@ export async function createAssignment(data: {
   }
 
   revalidatePath('/admin/assignments');
+
+  await logAuditEvent({
+    actor_id: data.vendor_id,
+    actor_name: 'admin',
+    actor_role: 'admin',
+    action: 'assignment_created',
+    entity: 'daily_assignments',
+    metadata: {
+      vendor_id: data.vendor_id,
+      lottery_id: data.lottery_id,
+      date: data.date,
+      pieces_assigned: data.pieces_assigned
+    }
+  });
+
   return { success: true };
 }
 
@@ -84,5 +100,16 @@ export async function deleteAssignment(id: string) {
   if (error) return { error: error.message };
 
   revalidatePath('/admin/assignments');
+
+  await logAuditEvent({
+    actor_id: id,
+    actor_name: 'admin',
+    actor_role: 'admin',
+    action: 'assignment_deleted',
+    entity: 'daily_assignments',
+    entity_id: id,
+    metadata: { deleted_id: id }
+  });
+
   return { success: true };
 }

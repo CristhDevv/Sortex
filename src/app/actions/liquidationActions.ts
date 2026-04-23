@@ -2,6 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+import { logAuditEvent } from '@/app/actions/auditActions';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -41,6 +42,24 @@ export async function processLiquidation(data: {
 
   revalidatePath('/admin/liquidations');
   revalidatePath('/admin/history');
+
+  await logAuditEvent({
+    actor_id: data.vendor_id,
+    actor_name: 'admin',
+    actor_role: 'admin',
+    action: 'liquidation_processed',
+    entity: 'liquidations',
+    entity_id: data.assignment_id,
+    metadata: {
+      date: data.date,
+      pieces_assigned: data.pieces_assigned,
+      pieces_sold: piecesSold,
+      pieces_unsold: data.pieces_unsold,
+      profit_cop: profitCop,
+      notes: data.notes || null
+    }
+  });
+
   return { success: true };
 }
 
