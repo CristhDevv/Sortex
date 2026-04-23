@@ -36,9 +36,9 @@ export default function AdminReportsPage() {
       .order('submitted_at', { ascending: false });
 
     if (selectedDate) {
-      // Filter by date (reports.submitted_at is timestamptz, we compare the date part)
-      query = query.gte('submitted_at', `${selectedDate}T00:00:00Z`)
-                   .lte('submitted_at', `${selectedDate}T23:59:59Z`);
+      // Filter by date using Bogota offset (-05:00)
+      query = query.gte('submitted_at', `${selectedDate}T00:00:00-05:00`)
+                   .lte('submitted_at', `${selectedDate}T23:59:59-05:00`);
     }
 
     if (selectedVendor !== 'all') {
@@ -60,29 +60,29 @@ export default function AdminReportsPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-end">
+    <div className="space-y-6 bg-zinc-950 min-h-screen pb-20">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 px-4 pt-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Auditoría de Reportes</h1>
-          <p className="text-gray-500">Visualiza y verifica las fotos enviadas por los vendedores.</p>
+          <h1 className="text-3xl font-black text-white tracking-tight">Auditoría de Reportes</h1>
+          <p className="text-zinc-500 font-medium">Visualiza y verifica las fotos enviadas por los vendedores.</p>
         </div>
         
-        <div className="flex space-x-4 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
-          <div>
-            <label className="block text-[10px] font-bold text-gray-400 uppercase ml-1">Fecha</label>
+        <div className="flex space-x-4 bg-zinc-900 p-3 rounded-2xl border border-zinc-800 shadow-xl shadow-black/20">
+          <div className="flex flex-col">
+            <label className="text-[10px] font-black text-zinc-500 uppercase ml-1 mb-1 tracking-widest">Fecha</label>
             <input
               type="date"
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="border-none focus:ring-0 text-sm font-medium"
+              className="bg-zinc-800 text-white border-none focus:ring-2 focus:ring-indigo-500/50 text-sm font-bold rounded-xl px-3 py-2 outline-none transition-all"
             />
           </div>
-          <div className="border-l border-gray-100 pl-4">
-            <label className="block text-[10px] font-bold text-gray-400 uppercase ml-1">Vendedor</label>
+          <div className="border-l border-zinc-800 pl-4 flex flex-col">
+            <label className="text-[10px] font-black text-zinc-500 uppercase ml-1 mb-1 tracking-widest">Vendedor</label>
             <select
               value={selectedVendor}
               onChange={(e) => setSelectedVendor(e.target.value)}
-              className="border-none focus:ring-0 text-sm font-medium"
+              className="bg-zinc-800 text-white border-none focus:ring-2 focus:ring-indigo-500/50 text-sm font-bold rounded-xl px-3 py-2 outline-none transition-all min-w-[140px]"
             >
               <option value="all">Todos</option>
               {vendors.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
@@ -92,34 +92,34 @@ export default function AdminReportsPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-gray-400">Cargando reportes...</div>
+        <div className="text-center py-20 text-zinc-600 font-bold animate-pulse">Cargando reportes...</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
           {reports.map((report) => (
-            <div key={report.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all">
-              <div className="p-5 flex items-start justify-between">
+            <div key={report.id} className="bg-zinc-900 rounded-[2rem] border border-zinc-800 overflow-hidden hover:border-zinc-700 transition-all group">
+              <div className="p-6 flex items-start justify-between">
                 <div>
-                  <h3 className="font-bold text-gray-900">{report.vendors.name}</h3>
-                  <div className="flex items-center text-xs text-gray-400 mt-1">
-                    <Calendar className="w-3 h-3 mr-1" />
-                    {format(new Date(report.submitted_at), "d 'de' MMMM, HH:mm", { locale: es })}
+                  <h3 className="font-black text-white text-lg tracking-tight group-hover:text-indigo-400 transition-colors">{report.vendors.name}</h3>
+                  <div className="flex items-center text-xs text-zinc-500 font-bold mt-1">
+                    <Calendar className="w-3.5 h-3.5 mr-1.5" />
+                    {format(new Date(report.submitted_at), "d 'de' MMM, HH:mm", { locale: es })}
                   </div>
                 </div>
-                <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase ${report.report_type === 'midday' ? 'bg-indigo-50 text-indigo-600' : 'bg-slate-800 text-white'}`}>
+                <span className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${report.report_type === 'midday' ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'}`}>
                   {report.report_type === 'midday' ? 'Mediodía' : 'Noche'}
                 </span>
               </div>
               
-              <div className="px-5 pb-5 flex items-center justify-between">
+              <div className="px-6 pb-6 flex items-center justify-between mt-2">
                 <div className="flex items-center">
                   {report.is_on_time ? (
-                    <div className="flex items-center text-green-600 text-sm font-bold">
-                      <CheckCircle2 className="w-4 h-4 mr-1" />
+                    <div className="flex items-center text-emerald-400 text-xs font-black tracking-widest uppercase">
+                      <CheckCircle2 className="w-4 h-4 mr-1.5" />
                       A TIEMPO
                     </div>
                   ) : (
-                    <div className="flex items-center text-red-500 text-sm font-bold">
-                      <AlertTriangle className="w-4 h-4 mr-1" />
+                    <div className="flex items-center text-rose-400 text-xs font-black tracking-widest uppercase">
+                      <AlertTriangle className="w-4 h-4 mr-1.5" />
                       TARDE
                     </div>
                   )}
@@ -127,7 +127,7 @@ export default function AdminReportsPage() {
                 
                 <button 
                   onClick={() => handleViewPhoto(report.photo_url)}
-                  className="flex items-center px-4 py-2 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-gray-800 transition-colors"
+                  className="flex items-center px-5 py-2.5 bg-zinc-800 text-white rounded-xl text-xs font-black tracking-widest uppercase hover:bg-zinc-700 active:scale-95 transition-all shadow-lg shadow-black/20"
                 >
                   <Eye className="w-4 h-4 mr-2" />
                   VER FOTO
@@ -136,8 +136,9 @@ export default function AdminReportsPage() {
             </div>
           ))}
           {reports.length === 0 && (
-            <div className="col-span-full bg-gray-50 border-2 border-dashed border-gray-200 rounded-3xl py-20 text-center">
-              <p className="text-gray-400 font-medium">No se encontraron reportes para esta selección.</p>
+            <div className="col-span-full bg-zinc-900/50 border-2 border-dashed border-zinc-800 rounded-[2.5rem] py-24 text-center">
+              <Shield className="mx-auto text-zinc-800 mb-4" size={48} />
+              <p className="text-zinc-500 font-bold tracking-tight">No se encontraron reportes para esta selección.</p>
             </div>
           )}
         </div>
@@ -145,15 +146,22 @@ export default function AdminReportsPage() {
 
       {/* Photo Viewer Modal */}
       {viewingPhoto && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 z-[100]" onClick={() => setViewingPhoto(null)}>
-          <div className="relative max-w-4xl w-full h-full flex items-center justify-center">
-            <img src={viewingPhoto} alt="Audit" className="max-w-full max-h-full object-contain rounded-xl shadow-2xl" />
-            <button 
-              className="absolute top-4 right-4 text-white bg-white bg-opacity-20 p-2 rounded-full hover:bg-opacity-30"
-              onClick={() => setViewingPhoto(null)}
-            >
-              <XCircle className="w-8 h-8" />
-            </button>
+        <div className="fixed inset-0 bg-zinc-950/95 backdrop-blur-md flex items-center justify-center p-4 z-[100]" onClick={() => setViewingPhoto(null)}>
+          <div className="relative max-w-5xl w-full h-full flex flex-col items-center justify-center animate-in zoom-in duration-300">
+            <div className="absolute top-4 right-4 flex items-center gap-4">
+               <button 
+                className="text-white/50 hover:text-white p-2 rounded-full transition-colors"
+                onClick={(e) => { e.stopPropagation(); setViewingPhoto(null); }}
+              >
+                <XCircle className="w-10 h-10" />
+              </button>
+            </div>
+            <img 
+              src={viewingPhoto} 
+              alt="Audit" 
+              className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-[0_0_100px_rgba(0,0,0,0.5)] border border-zinc-800" 
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
         </div>
       )}
