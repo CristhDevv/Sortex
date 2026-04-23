@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { adminLogout } from '@/app/actions/adminAuthActions';
@@ -11,7 +12,9 @@ import {
   Camera, 
   Calculator, 
   History,
-  BarChart3
+  BarChart3,
+  Menu,
+  X
 } from 'lucide-react';
 
 export default function AdminLayout({
@@ -21,6 +24,7 @@ export default function AdminLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
     await adminLogout();
@@ -38,16 +42,35 @@ export default function AdminLayout({
     { name: 'Análisis', href: '/admin/analytics', icon: BarChart3 },
   ];
 
+  const closeSidebar = () => setSidebarOpen(false);
+
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity duration-300"
+          onClick={closeSidebar}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-xl border-r border-gray-100 flex flex-col sticky top-0 h-screen">
-        <div className="p-8">
-          <h2 className="text-3xl font-black text-indigo-600 tracking-tighter">SORTEX</h2>
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Administración</p>
+      <aside className={`
+        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-2xl border-r border-gray-100 flex flex-col 
+        transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:shadow-xl
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <div className="p-8 flex justify-between items-center">
+          <div>
+            <h2 className="text-3xl font-black text-indigo-600 tracking-tighter">SORTEX</h2>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Administración</p>
+          </div>
+          <button onClick={closeSidebar} className="md:hidden text-gray-400 hover:text-indigo-600 transition-colors">
+            <X size={24} />
+          </button>
         </div>
         
-        <nav className="flex-1 mt-4 px-4 space-y-2">
+        <nav className="flex-1 mt-4 px-4 space-y-2 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
@@ -56,6 +79,7 @@ export default function AdminLayout({
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={closeSidebar}
                 className={`flex items-center px-4 py-3 rounded-xl transition-all duration-200 group ${
                   isActive 
                     ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100' 
@@ -81,11 +105,24 @@ export default function AdminLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-10 overflow-y-auto">
-        <div className="max-w-7xl mx-auto">
-          {children}
-        </div>
-      </main>
+      <div className="flex-1 flex flex-col min-w-0 h-screen">
+        {/* Mobile Header */}
+        <header className="h-16 flex items-center px-6 md:hidden bg-white border-b border-gray-100 flex-shrink-0">
+          <button 
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 -ml-2 text-gray-500 hover:text-indigo-600 transition-colors"
+          >
+            <Menu size={24} />
+          </button>
+          <span className="ml-4 font-black text-indigo-600 tracking-tighter text-xl">SORTEX</span>
+        </header>
+
+        <main className="flex-1 p-6 md:p-10 overflow-y-auto bg-gray-50">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
