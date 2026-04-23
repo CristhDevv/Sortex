@@ -10,7 +10,8 @@ import {
   ClipboardList, 
   Camera, 
   Calculator, 
-  History 
+  History,
+  BarChart3
 } from 'lucide-react';
 
 export default function AdminLayout({
@@ -34,6 +35,7 @@ export default function AdminLayout({
     { name: 'Reportes', href: '/admin/reports', icon: Camera },
     { name: 'Liquidaciones', href: '/admin/liquidations', icon: Calculator },
     { name: 'Historial', href: '/admin/history', icon: History },
+    { name: 'Análisis', href: '/admin/analytics', icon: BarChart3 },
   ];
 
   return (

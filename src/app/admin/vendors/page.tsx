@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { UserPlus, Edit2, Trash2, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { UserPlus, Edit2, Trash2, ShieldCheck, ShieldAlert, History } from 'lucide-react';
 import bcrypt from 'bcryptjs';
 
 interface Vendor {
@@ -153,6 +154,13 @@ export default function VendorsPage() {
                       >
                         {vendor.is_active ? <ShieldAlert className="w-5 h-5" /> : <ShieldCheck className="w-5 h-5" />}
                       </button>
+                      <Link
+                        href={`/admin/vendors/${vendor.id}`}
+                        className="text-amber-600 hover:text-amber-900"
+                        title="Historial"
+                      >
+                        <History className="w-5 h-5" />
+                      </Link>
                       <button
                         onClick={() => openEditModal(vendor)}
                         className="text-indigo-600 hover:text-indigo-900"
