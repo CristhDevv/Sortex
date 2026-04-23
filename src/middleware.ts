@@ -31,7 +31,9 @@ export async function middleware(request: NextRequest) {
 
   // Protect /admin routes
   if (path.startsWith('/admin')) {
-    if (!adminSession || (adminSession.role !== 'admin' && adminSession.role !== 'owner')) {
+    const isAdmin = adminSession && (adminSession.role === 'admin' || adminSession.role === 'owner');
+    const isOwnerAccessing = ownerSession && ownerSession.role === 'owner';
+    if (!isAdmin && !isOwnerAccessing) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
