@@ -37,3 +37,29 @@ export async function logAuditEvent({
     console.error('Error writing audit log:', error.message);
   }
 }
+
+export async function getAuditLogs({
+  limit = 50,
+  action,
+  actor_role,
+}: {
+  limit?: number;
+  action?: string;
+  actor_role?: string;
+} = {}) {
+  let query = supabaseAdmin
+    .from('audit_logs')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (action) query = query.eq('action', action);
+  if (actor_role) query = query.eq('actor_role', actor_role);
+
+  const { data, error } = await query;
+  if (error) {
+    console.error('Error fetching audit logs:', error.message);
+    return [];
+  }
+  return data;
+}

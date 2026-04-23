@@ -77,6 +77,10 @@ export default function OwnerDashboard() {
             <ShieldCheck className="text-indigo-600 mr-4" size={24} />
             <span className="font-bold text-indigo-900">Usuarios y Permisos</span>
           </Link>
+          <Link href="/owner/audit" className="flex items-center p-6 bg-zinc-900 rounded-3xl border border-zinc-800 hover:border-indigo-500 transition-all group">
+            <ShieldCheck className="text-indigo-400 mr-4" size={24} />
+            <span className="font-bold text-white">Auditoría</span>
+          </Link>
         </div>
       </div>
     </div>
