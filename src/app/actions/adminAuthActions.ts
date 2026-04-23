@@ -1,6 +1,6 @@
 'use server';
 import { cookies } from 'next/headers';
-import { SignJWT } from 'jose';
+import { SignJWT, jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
 import { createClient } from '@supabase/supabase-js';
 import { logAuditEvent } from '@/app/actions/auditActions';
@@ -154,4 +154,25 @@ export async function toggleAdminUserActive(userId: string, currentValue: boolea
   });
 
   return { success: true };
+}
+
+export async function getActiveSession() {
+  const ownerToken = cookies().get('owner_session')?.value;
+  const adminToken = cookies().get('admin_session')?.value;
+
+  if (ownerToken) {
+    try {
+      const { payload } = await jwtVerify(ownerToken, JWT_SECRET);
+      return { role: 'owner', name: (payload as any).name };
+    } catch {}
+  }
+
+  if (adminToken) {
+    try {
+      const { payload } = await jwtVerify(adminToken, JWT_SECRET);
+      return { role: 'admin', name: (payload as any).name };
+    } catch {}
+  }
+
+  return null;
 }
