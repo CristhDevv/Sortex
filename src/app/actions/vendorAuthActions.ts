@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies, headers } from 'next/headers';
+import { toZonedTime, format } from 'date-fns-tz';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -84,4 +85,41 @@ export async function getVendorSession() {
 
 export async function vendorLogout() {
   cookies().delete('vendor_session');
+}
+
+export async function getVendors() {
+  const { data, error } = await supabaseAdmin
+    .from('vendors')
+    .select('id, name, alias')
+    .eq('is_active', true)
+    .order('name', { ascending: true });
+  if (error) return { error: error.message };
+  return { data };
+}
+
+export async function getVendorAssignmentsToday(vendorId: string) {
+  const TIMEZONE = 'America/Bogota';
+  const today = format(toZonedTime(new Date(), TIMEZONE), 'yyyy-MM-dd');
+
+  const { data, error } = await supabaseAdmin
+    .from('daily_assignments')
+    .select(`
+      *,
+      lotteries (
+        name,
+        draw_time,
+        piece_price_cop,
+        piece_profit_cop
+      ),
+      reports (*)
+    `)
+    .eq('vendor_id', vendorId)
+    .eq('date', today);
+
+  if (error) {
+    console.error('Error fetching vendor assignments:', error);
+    return [];
+  }
+  
+  return data;
 }

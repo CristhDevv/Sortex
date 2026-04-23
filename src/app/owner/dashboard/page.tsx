@@ -8,7 +8,8 @@ import {
   Wallet, 
   History, 
   ShieldCheck,
-  LayoutDashboard
+  LayoutDashboard,
+  Ticket
 } from 'lucide-react';
 
 export default function OwnerDashboard() {
@@ -67,6 +68,10 @@ export default function OwnerDashboard() {
           <Link href="/admin/history" className="flex items-center p-6 bg-white rounded-3xl border border-gray-100 hover:border-indigo-600 transition-all group">
             <History className="text-gray-400 group-hover:text-indigo-600 mr-4" size={24} />
             <span className="font-bold text-gray-700">Historial</span>
+          </Link>
+          <Link href="/owner/lotteries" className="flex items-center p-6 bg-white rounded-3xl border border-gray-100 hover:border-indigo-600 transition-all group">
+            <Ticket className="text-gray-400 group-hover:text-indigo-600 mr-4" size={24} />
+            <span className="font-bold text-gray-700">Loterías</span>
           </Link>
           <Link href="/owner/users" className="flex items-center p-6 bg-indigo-50 rounded-3xl border border-indigo-100 hover:border-indigo-600 transition-all group">
             <ShieldCheck className="text-indigo-600 mr-4" size={24} />

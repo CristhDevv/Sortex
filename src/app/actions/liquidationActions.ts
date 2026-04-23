@@ -8,25 +8,31 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+/**
+ * Procesa la liquidación de una asignación específica,
+ * calculando la utilidad (profit) basada en las fracciones vendidas.
+ */
 export async function processLiquidation(data: {
   assignment_id: string;
   vendor_id: string;
   date: string;
-  total_tickets: number;
-  unsold_tickets: number;
-  ticket_value: number;
+  pieces_assigned: number;
+  pieces_unsold: number;
+  piece_profit_cop: number;
   notes?: string;
 }) {
   // Cálculo seguro en el servidor
-  const amountDue = (data.total_tickets - data.unsold_tickets) * data.ticket_value;
+  const piecesSold = data.pieces_assigned - data.pieces_unsold;
+  const profitCop = piecesSold * data.piece_profit_cop;
 
   const { error } = await supabaseAdmin.from('liquidations').upsert([{
     assignment_id: data.assignment_id,
     vendor_id: data.vendor_id,
     date: data.date,
-    total_tickets: data.total_tickets,
-    unsold_tickets: data.unsold_tickets,
-    amount_due_cop: amountDue,
+    pieces_assigned: data.pieces_assigned,
+    pieces_sold: piecesSold,
+    pieces_unsold: data.pieces_unsold,
+    profit_cop: profitCop,
     reviewed_by_admin: true,
     notes: data.notes
   }], { onConflict: 'assignment_id' });
@@ -38,17 +44,48 @@ export async function processLiquidation(data: {
   return { success: true };
 }
 
-export async function getDailyLiquidations(date: string) {
+/**
+ * Obtiene todas las asignaciones del día con sus respectivas liquidaciones
+ * para el panel de revisión del propietario/admin.
+ */
+export async function getLiquidationsByDate(date: string) {
   const { data, error } = await supabaseAdmin
     .from('daily_assignments')
     .select(`
       *,
-      vendors (id, name, alias),
-      reports (id, report_type, is_on_time, photo_url),
+      vendors (name, alias),
+      lotteries (name, draw_time, piece_profit_cop),
+      reports (*),
       liquidations (*)
     `)
-    .eq('date', date);
+    .eq('date', date)
+    .order('created_at', { ascending: false });
 
-  if (error) return [];
+  if (error) {
+    console.error('Error fetching liquidations by date:', error);
+    return [];
+  }
+  return data;
+}
+
+/**
+ * Obtiene el historial completo de liquidaciones de un vendedor.
+ */
+export async function getLiquidationsByVendor(vendor_id: string) {
+  const { data, error } = await supabaseAdmin
+    .from('liquidations')
+    .select(`
+      *,
+      daily_assignments (
+        lotteries (name)
+      )
+    `)
+    .eq('vendor_id', vendor_id)
+    .order('date', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching liquidations by vendor:', error);
+    return [];
+  }
   return data;
 }

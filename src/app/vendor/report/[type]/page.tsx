@@ -1,17 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { submitReportWithPhoto } from '@/app/actions/reportActions';
 import { getVendorSession } from '@/app/actions/vendorAuthActions';
 import { Camera, Send, ChevronLeft, Loader2, CheckCircle2 } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 
-export default function ReportSubmissionPage() {
+function ReportContent() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const reportType = params.type as 'midday' | 'night';
+  const assignmentId = searchParams.get('assignment_id');
   
   const [assignment, setAssignment] = useState<any>(null);
   const [photo, setPhoto] = useState<File | null>(null);
@@ -28,18 +30,22 @@ export default function ReportSubmissionPage() {
         return;
       }
       
-      const today = new Date().toISOString().split('T')[0];
+      if (!assignmentId) {
+        router.push('/vendor/dashboard');
+        return;
+      }
+
+      // Consulta específica por ID de asignación
       const { data } = await supabase
         .from('daily_assignments')
-        .select('*')
-        .eq('vendor_id', session.id)
-        .eq('date', today)
+        .select('*, lotteries(name, draw_time)')
+        .eq('id', assignmentId)
         .single();
       
       if (data) setAssignment(data);
     }
     init();
-  }, []);
+  }, [assignmentId, router]);
 
   const handlePhotoCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -103,7 +109,7 @@ export default function ReportSubmissionPage() {
           <ChevronLeft className="w-6 h-6 text-gray-600" />
         </button>
         <h1 className="flex-1 text-center font-black text-xl text-indigo-600 uppercase">
-          Reporte {reportType === 'midday' ? 'Mediodía' : 'Noche'}
+          {assignment?.lotteries?.name || 'Reporte'} - {reportType === 'midday' ? 'Mediodía' : 'Noche'}
         </h1>
         <div className="w-10"></div>
       </div>
@@ -174,5 +180,13 @@ export default function ReportSubmissionPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function ReportSubmissionPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50 uppercase font-black text-gray-300">Cargando...</div>}>
+      <ReportContent />
+    </Suspense>
   );
 }

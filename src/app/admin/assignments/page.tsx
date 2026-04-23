@@ -1,226 +1,283 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { createAssignment, getDailyAssignments } from '@/app/actions/assignmentActions';
-import { PlusCircle, ClipboardList, TrendingUp, DollarSign } from 'lucide-react';
+import { 
+  createAssignment, 
+  getAssignmentsByDate, 
+  deleteAssignment 
+} from '@/app/actions/assignmentActions';
+import { getLotteries } from '@/app/actions/lotteryActions';
+import { getVendors } from '@/app/actions/vendorAuthActions';
+import { 
+  Plus, 
+  Trash2, 
+  ClipboardList, 
+  CheckCircle2, 
+  Circle, 
+  XCircle,
+  Calendar,
+  User,
+  Ticket,
+  Clock
+} from 'lucide-react';
+import { format, toZonedTime } from 'date-fns-tz';
+
+const TIMEZONE = 'America/Bogota';
 
 export default function AssignmentsPage() {
   const [vendors, setVendors] = useState<any[]>([]);
+  const [lotteries, setLotteries] = useState<any[]>([]);
   const [assignments, setAssignments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
 
   // Form states
   const [selectedVendor, setSelectedVendor] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [totalTickets, setTotalTickets] = useState(0);
-  const [ticketValue, setTicketValue] = useState(2000); // Default common value
+  const [selectedLottery, setSelectedLottery] = useState('');
+  const [date, setDate] = useState(() => {
+    const zonedNow = toZonedTime(new Date(), TIMEZONE);
+    return format(zonedNow, 'yyyy-MM-dd');
+  });
+  const [piecesAssigned, setPiecesAssigned] = useState(1);
+  const [formLoading, setFormLoading] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    fetchInitialData();
+  }, []);
+
+  useEffect(() => {
+    fetchAssignments();
   }, [date]);
 
-  const fetchData = async () => {
-    setLoading(true);
-    // Fetch active vendors
-    const { data: activeVendors } = await supabase
-      .from('vendors')
-      .select('id, name, alias')
-      .eq('is_active', true);
+  async function fetchInitialData() {
+    const [vendorsRes, lotteriesRes] = await Promise.all([
+      getVendors(),
+      getLotteries()
+    ]);
     
-    if (activeVendors) setVendors(activeVendors);
+    if (vendorsRes.data) setVendors(vendorsRes.data);
+    if (lotteriesRes.data) {
+      setLotteries(lotteriesRes.data.filter((l: any) => l.is_active));
+    }
+  }
 
-    // Fetch assignments for the selected date
-    const dailyData = await getDailyAssignments(date);
+  async function fetchAssignments() {
+    setLoading(true);
+    const dailyData = await getAssignmentsByDate(date);
     setAssignments(dailyData);
     setLoading(false);
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormLoading(true);
+    
     const result = await createAssignment({
       vendor_id: selectedVendor,
+      lottery_id: selectedLottery,
       date,
-      total_tickets: totalTickets,
-      ticket_value_cop: ticketValue,
+      pieces_assigned: piecesAssigned,
     });
 
     if (result.error) {
       alert(result.error);
     } else {
       setShowModal(false);
-      fetchData();
+      fetchAssignments();
+      // Reset some form fields
+      setPiecesAssigned(1);
+    }
+    setFormLoading(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('¿Estás seguro de eliminar esta asignación?')) return;
+    
+    const result = await deleteAssignment(id);
+    if (result.success) {
+      fetchAssignments();
+    } else {
+      alert('Error: ' + result.error);
     }
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="min-h-screen bg-gray-50 pb-20">
+      {/* Header */}
+      <div className="bg-white px-6 py-8 border-b border-gray-100 mb-8 flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Asignaciones Diarias</h1>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="mt-2 block w-full px-3 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-          />
+          <h1 className="text-3xl font-black text-gray-900 tracking-tight">Asignaciones</h1>
+          <div className="mt-2 flex items-center bg-gray-50 p-2 rounded-xl border border-gray-100">
+            <Calendar className="text-gray-400 mr-2" size={18} />
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              className="bg-transparent font-bold text-gray-700 border-none focus:ring-0 p-0 text-sm"
+            />
+          </div>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          className="bg-indigo-600 text-white p-4 rounded-2xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 active:scale-95 transition-all"
         >
-          <PlusCircle className="w-5 h-5 mr-2" />
-          Nueva Asignación
+          <Plus size={24} />
         </button>
       </div>
 
-      {loading ? (
-        <div className="text-center py-10 text-gray-500">Cargando asignaciones...</div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6">
-          <div className="bg-white shadow-sm rounded-xl border border-gray-200 overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendedor</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Boletas</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cartera Total</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reportes</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {assignments.map((asg) => {
-                  const middayReport = asg.reports?.find((r: any) => r.report_type === 'midday');
-                  const nightReport = asg.reports?.find((r: any) => r.report_type === 'night');
-                  
-                  return (
-                    <tr key={asg.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{asg.vendors.name}</div>
-                        <div className="text-sm text-gray-500">@{asg.vendors.alias}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {asg.total_tickets} boletas
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-indigo-600">
-                        {formatCurrency(asg.total_tickets * asg.ticket_value_cop)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <div className="flex space-x-2">
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${middayReport ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-400'}`}>
-                            Mediodía: {middayReport ? '✓' : '✗'}
-                          </span>
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${nightReport ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-400'}`}>
-                            Noche: {nightReport ? '✓' : '✗'}
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {assignments.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-10 text-center text-gray-400 italic">
-                      No hay asignaciones para esta fecha
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+      {/* Assignments List */}
+      <div className="px-6 space-y-6">
+        {loading ? (
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+            <p className="mt-4 text-gray-500 font-bold">Buscando asignaciones...</p>
           </div>
-        </div>
-      )}
+        ) : assignments.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-[2.5rem] border-2 border-dashed border-gray-100">
+            <ClipboardList className="mx-auto text-gray-200 mb-4" size={48} />
+            <p className="text-gray-400 font-bold">No hay asignaciones para este día</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {assignments.map((asg) => {
+              const middayReport = asg.reports?.find((r: any) => r.report_type === 'midday');
+              const nightReport = asg.reports?.find((r: any) => r.report_type === 'night');
+              
+              return (
+                <div key={asg.id} className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100 hover:border-indigo-100 transition-all">
+                  <div className="flex justify-between items-start mb-6">
+                    <div className="flex items-center">
+                      <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center mr-4">
+                        <User className="text-indigo-600" size={24} />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-black text-gray-900 leading-none mb-1">{asg.vendors?.name}</h3>
+                        <p className="text-gray-400 font-medium text-sm">@{asg.vendors?.alias}</p>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => handleDelete(asg.id)}
+                      className="p-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
+                      <div className="flex items-center">
+                        <Ticket className="text-indigo-600 mr-3" size={20} />
+                        <div>
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Lotería</p>
+                          <p className="font-bold text-gray-900">{asg.lotteries?.name}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Jornada</p>
+                        <span className={`text-xs font-black uppercase tracking-wider ${asg.lotteries?.draw_time === 'midday' ? 'text-amber-600' : 'text-slate-800'}`}>
+                          {asg.lotteries?.draw_time === 'midday' ? 'Mediodía' : 'Noche'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 bg-gray-50 rounded-2xl">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Fracciones</p>
+                        <p className="text-2xl font-black text-indigo-600">{asg.pieces_assigned}</p>
+                      </div>
+                      <div className="p-4 bg-gray-50 rounded-2xl">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Reportes</p>
+                        <div className="flex gap-2 mt-1">
+                          <div title="Mediodía">
+                            {middayReport ? <CheckCircle2 className="text-green-500" size={24} /> : <Circle className="text-gray-200" size={24} />}
+                          </div>
+                          <div title="Noche">
+                            {nightReport ? <CheckCircle2 className="text-green-500" size={24} /> : <Circle className="text-gray-200" size={24} />}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 transform transition-all animate-in fade-in zoom-in duration-200">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-              <ClipboardList className="w-6 h-6 mr-2 text-indigo-600" />
-              Nueva Asignación
-            </h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-[2.5rem] p-10 animate-in slide-in-from-bottom-8 duration-500">
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-black text-gray-900">Nueva Asignación</h2>
+              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
+                <XCircle size={32} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Vendedor</label>
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1 block">Vendedor</label>
                 <select
                   value={selectedVendor}
                   onChange={(e) => setSelectedVendor(e.target.value)}
                   required
-                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-6 py-4 bg-gray-50 rounded-2xl font-bold focus:ring-4 focus:ring-indigo-100 border-none transition-all appearance-none"
                 >
-                  <option value="">Seleccionar vendedor...</option>
+                  <option value="">Seleccionar...</option>
                   {vendors.map((v) => (
                     <option key={v.id} value={v.id}>{v.name} (@{v.alias})</option>
                   ))}
                 </select>
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700">Fecha</label>
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1 block">Lotería</label>
+                <select
+                  value={selectedLottery}
+                  onChange={(e) => setSelectedLottery(e.target.value)}
                   required
-                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
+                  className="w-full px-6 py-4 bg-gray-50 rounded-2xl font-bold focus:ring-4 focus:ring-indigo-100 border-none transition-all appearance-none"
+                >
+                  <option value="">Seleccionar...</option>
+                  {lotteries.map((l) => (
+                    <option key={l.id} value={l.id}>{l.name} ({l.draw_time === 'midday' ? 'Día' : 'Noche'})</option>
+                  ))}
+                </select>
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Total Boletas</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1 block">Fecha</label>
                   <input
-                    type="number"
-                    value={totalTickets}
-                    onChange={(e) => setTotalTickets(parseInt(e.target.value))}
+                    type="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
                     required
-                    min="1"
-                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-6 py-4 bg-gray-50 rounded-2xl font-bold focus:ring-4 focus:ring-indigo-100 border-none transition-all"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Valor Boleta ($)</label>
+                  <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1 mb-1 block">Fracciones</label>
                   <input
                     type="number"
-                    value={ticketValue}
-                    onChange={(e) => setTicketValue(parseInt(e.target.value))}
+                    value={piecesAssigned}
+                    onChange={(e) => setPiecesAssigned(parseInt(e.target.value))}
                     required
-                    min="100"
-                    step="100"
-                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    min="1"
+                    className="w-full px-6 py-4 bg-gray-50 rounded-2xl font-bold focus:ring-4 focus:ring-indigo-100 border-none transition-all"
                   />
-                </div>
-              </div>
-              
-              <div className="bg-indigo-50 p-4 rounded-xl mt-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-indigo-700 font-medium">Cartera Total:</span>
-                  <span className="text-xl font-bold text-indigo-900">{formatCurrency(totalTickets * ticketValue)}</span>
                 </div>
               </div>
 
-              <div className="flex space-x-3 mt-8">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 py-2 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2 px-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium shadow-lg shadow-indigo-200"
-                >
-                  Confirmar
-                </button>
-              </div>
+              <button 
+                type="submit"
+                disabled={formLoading}
+                className="w-full py-5 bg-indigo-600 text-white rounded-2xl font-black text-xl hover:bg-indigo-700 shadow-xl shadow-indigo-100 transition-all disabled:opacity-50"
+              >
+                {formLoading ? 'Guardando...' : 'ASIGNAR AHORA'}
+              </button>
             </form>
           </div>
         </div>
