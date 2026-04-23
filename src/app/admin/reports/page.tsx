@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { getSignedPhotoUrl } from '@/app/actions/reportActions';
-import { Calendar, User, Eye, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
+import { Calendar, User, Eye, CheckCircle2, XCircle, AlertTriangle, Shield } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
