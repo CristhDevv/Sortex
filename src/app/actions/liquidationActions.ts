@@ -3,6 +3,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
 import { logAuditEvent } from '@/app/actions/auditActions';
+import { getVendorSession } from '@/app/actions/vendorAuthActions';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -138,7 +139,8 @@ export async function getLiquidationsByVendor(vendor_id: string) {
     .select(`
       *,
       daily_assignments (
-        lotteries (name)
+        pieces_assigned,
+        lotteries (name, draw_time, piece_price_cop)
       )
     `)
     .eq('vendor_id', vendor_id)
@@ -149,4 +151,31 @@ export async function getLiquidationsByVendor(vendor_id: string) {
     return [];
   }
   return data;
+}
+
+export async function getVendorLiquidationToday() {
+  const session = await getVendorSession();
+  if (!session) return null;
+  
+  const today = new Date().toLocaleDateString('en-CA', {
+    timeZone: 'America/Bogota'
+  });
+  
+  const { data, error } = await supabaseAdmin
+    .from('liquidations')
+    .select(`
+      *,
+      daily_assignments (
+        pieces_assigned,
+        lotteries (name, draw_time, piece_price_cop)
+      )
+    `)
+    .eq('vendor_id', session.id)
+    .eq('date', today);
+    
+  if (error) {
+    console.error('Error fetching vendor liquidation today:', error);
+    return null;
+  }
+  return data && data.length > 0 ? data : null;
 }

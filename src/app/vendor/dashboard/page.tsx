@@ -7,7 +7,7 @@ import {
   getVendorAssignmentsToday 
 } from '@/app/actions/vendorAuthActions';
 import { useTheme } from '@/context/ThemeContext';
-import { LogOut, Camera, CheckCircle2, AlertTriangle, Clock, Ticket, Sun, Moon } from 'lucide-react';
+import { LogOut, Camera, CheckCircle2, AlertTriangle, Clock, Ticket, Sun, Moon, Receipt, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toZonedTime } from 'date-fns-tz';
 import Link from 'next/link';
@@ -128,6 +128,39 @@ export default function VendorDashboard() {
           {/* Decorative gradients */}
           <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
         </section>
+
+        {/* Mi Liquidación de Hoy */}
+        {assignments.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-4 px-2">
+              <Receipt className="w-4 h-4 text-emerald-400" />
+              <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Cierre del Día</p>
+            </div>
+            
+            <Link href="/vendor/liquidation">
+              <div 
+                className="flex items-center justify-between p-4 sm:p-5 rounded-2xl border transition-all hover:scale-[1.02] shadow-sm cursor-pointer"
+                style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+              >
+                <div className="flex items-center gap-4">
+                  <div 
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 border"
+                    style={{ background: 'var(--bg-page)', color: 'var(--text-primary)', borderColor: 'var(--border)' }}
+                  >
+                    <Receipt size={24} className="text-emerald-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-black leading-tight mb-0.5" style={{ color: 'var(--text-primary)' }}>Ver mi liquidación</h3>
+                    <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Consulta lo que debes entregar hoy</p>
+                  </div>
+                </div>
+                <div className="text-emerald-500">
+                  <ChevronRight size={24} />
+                </div>
+              </div>
+            </Link>
+          </section>
+        )}
 
         {/* Reportes por Lotería */}
         <section>
