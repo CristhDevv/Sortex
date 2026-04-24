@@ -2,7 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { getVendorSession } from './vendorAuthActions';
-import { toZonedTime } from 'date-fns-tz';
+import { toZonedTime, format } from 'date-fns-tz';
 
 // Initialize Supabase with Service Role for Storage and Private Data
 const supabaseAdmin = createClient(
@@ -26,8 +26,8 @@ export async function submitReportWithPhoto(formData: FormData) {
   const zonedNow = toZonedTime(now, TIMEZONE);
   const dateStr = format(zonedNow, 'yyyy-MM-dd', { timeZone: TIMEZONE });
   const timestamp = now.getTime();
-  
-  // 1. Calculate is_on_time
+
+  // Calculate is_on_time
   const hours = zonedNow.getHours();
   const minutes = zonedNow.getMinutes();
   const timeInMinutes = hours * 60 + minutes;
@@ -39,47 +39,110 @@ export async function submitReportWithPhoto(formData: FormData) {
     isOnTime = timeInMinutes <= 22 * 60; // 10:00 PM
   }
 
-  // 2. Upload to Storage
-  // Path: /{vendor_id}/{date}/{report_type}_{timestamp}.jpg
+  // 1. Find or create the report row
+  const { data: existingReport } = await supabaseAdmin
+    .from('reports')
+    .select('id')
+    .eq('assignment_id', assignmentId)
+    .eq('report_type', reportType)
+    .maybeSingle();
+
+  let reportId: string;
+
+  if (existingReport) {
+    // Reuse existing report — photo_url in reports is intentionally not touched
+    reportId = existingReport.id;
+  } else {
+    // Create new report row (photo_url omitted — multi-photo lives in report_photos)
+    const { data: newReport, error: reportError } = await supabaseAdmin
+      .from('reports')
+      .insert([{
+        vendor_id: session.id,
+        assignment_id: assignmentId,
+        report_type: reportType,
+        unsold_tickets: 0,
+        submitted_at: now.toISOString(),
+        is_on_time: isOnTime,
+      }])
+      .select('id')
+      .single();
+
+    if (reportError || !newReport) {
+      return { error: `Error creando reporte: ${reportError?.message}` };
+    }
+    reportId = newReport.id;
+  }
+
+  // 2. Upload photo to Storage
+  // Path: /{vendor_id}/{date}/{report_type}_{timestamp}.{ext}
   const fileExt = photoFile.name.split('.').pop();
   const filePath = `${session.id}/${dateStr}/${reportType}_${timestamp}.${fileExt}`;
 
-  const { data: storageData, error: storageError } = await supabaseAdmin
+  const { error: storageError } = await supabaseAdmin
     .storage
     .from('reports-photos')
     .upload(filePath, photoFile, {
       contentType: photoFile.type,
-      upsert: true
+      upsert: true,
     });
 
   if (storageError) return { error: `Error subiendo foto: ${storageError.message}` };
 
-  // 3. Save to Database
-  const { error: dbError } = await supabaseAdmin.from('reports').insert([{
-    vendor_id: session.id,
-    assignment_id: assignmentId,
-    report_type: reportType,
-    photo_url: filePath, // Relative path
-    unsold_tickets: 0, // Manual entry removed per business decision
-    submitted_at: now.toISOString(),
-    is_on_time: isOnTime,
-  }]);
+  // 3. Count existing photos for this report (to set correct order)
+  const { count } = await supabaseAdmin
+    .from('report_photos')
+    .select('*', { count: 'exact', head: true })
+    .eq('report_id', reportId);
 
-  if (dbError) return { error: `Error guardando reporte: ${dbError.message}` };
+  // 4. Insert into report_photos
+  const { error: photoError } = await supabaseAdmin
+    .from('report_photos')
+    .insert([{
+      report_id: reportId,
+      photo_url: filePath,
+      order: (count ?? 0) + 1,
+    }]);
+
+  if (photoError) return { error: `Error guardando foto: ${photoError.message}` };
 
   return { success: true };
 }
 
-// Action to generate Signed URL
+// Generate a signed URL for a Storage path (valid for 90 days)
 export async function getSignedPhotoUrl(path: string) {
   const { data, error } = await supabaseAdmin
     .storage
     .from('reports-photos')
-    .createSignedUrl(path, 60); // 60 seconds
+    .createSignedUrl(path, 7_776_000); // 90 días
 
   if (error) return null;
   return data.signedUrl;
 }
 
-// Utility import needed for date formatting
-import { format } from 'date-fns-tz';
+/**
+ * Obtiene todas las URLs firmadas de report_photos para un conjunto de report IDs,
+ * ordenadas por "order" ascendente.
+ */
+export async function getReportPhotoUrls(reportIds: string[]): Promise<string[]> {
+  if (reportIds.length === 0) return [];
+
+  const { data, error } = await supabaseAdmin
+    .from('report_photos')
+    .select('photo_url')
+    .in('report_id', reportIds)
+    .order('order', { ascending: true });
+
+  if (error || !data) return [];
+
+  const urls = await Promise.all(
+    data.map(async (p) => {
+      const { data: signed } = await supabaseAdmin
+        .storage
+        .from('reports-photos')
+        .createSignedUrl(p.photo_url, 7_776_000);
+      return signed?.signedUrl ?? null;
+    })
+  );
+
+  return urls.filter((u): u is string => u !== null);
+}
