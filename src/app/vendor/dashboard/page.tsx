@@ -6,7 +6,8 @@ import {
   vendorLogout, 
   getVendorAssignmentsToday 
 } from '@/app/actions/vendorAuthActions';
-import { LogOut, Camera, CheckCircle2, AlertTriangle, Clock, Ticket } from 'lucide-react';
+import { useTheme } from '@/context/ThemeContext';
+import { LogOut, Camera, CheckCircle2, AlertTriangle, Clock, Ticket, Sun, Moon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toZonedTime } from 'date-fns-tz';
 import Link from 'next/link';
@@ -18,6 +19,7 @@ export default function VendorDashboard() {
   const [assignments, setAssignments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => { fetchData(); }, []);
 
@@ -41,8 +43,8 @@ export default function VendorDashboard() {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950">
-      <p className="text-sm text-zinc-500 font-black tracking-widest uppercase animate-pulse">Cargando...</p>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-page)' }}>
+      <p className="text-sm font-black tracking-widest uppercase animate-pulse" style={{ color: 'var(--text-muted)' }}>Cargando...</p>
     </div>
   );
 
@@ -53,48 +55,69 @@ export default function VendorDashboard() {
   }, 0);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-page)' }}>
 
       {/* Header */}
       <header className="flex items-center justify-between px-6 pt-12 pb-6">
         <div>
-          <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Sortex · Vendedor</p>
-          <h1 className="text-2xl font-black text-white tracking-tight">{vendor?.alias}</h1>
+          <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Sortex · Vendedor</p>
+          <h1 className="text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>{vendor?.alias}</h1>
         </div>
-        <button
-          onClick={handleLogout}
-          className="p-3 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all shadow-sm"
-        >
-          <LogOut className="w-5 h-5" />
-        </button>
+        <div className="flex items-center">
+          <button
+            onClick={toggleTheme}
+            className="p-3 rounded-full border transition-all shadow-sm mr-2"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-card-hover)'; e.currentTarget.style.color = 'var(--text-primary)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+          >
+            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+          <button
+            onClick={handleLogout}
+            className="p-3 rounded-full border transition-all shadow-sm"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-card-hover)'; e.currentTarget.style.color = 'var(--text-primary)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+          >
+            <LogOut className="w-5 h-5" />
+          </button>
+        </div>
       </header>
 
       <main className="flex-1 px-4 sm:px-6 pb-12 space-y-8">
 
         {/* Cartera del día */}
-        <section className="bg-zinc-900 rounded-3xl p-6 sm:p-8 border border-zinc-800 shadow-2xl relative overflow-hidden">
+        <section 
+          className="rounded-3xl p-6 sm:p-8 border shadow-2xl relative overflow-hidden"
+          style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        >
           <div className="relative z-10">
-            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-2">Total para recaudar hoy</p>
+            <p className="text-[10px] font-black uppercase tracking-widest mb-2" style={{ color: 'var(--text-muted)' }}>Total para recaudar hoy</p>
             {assignments.length > 0 ? (
               <>
-                <p className="text-5xl sm:text-6xl font-black text-white tracking-tight tabular-nums">
+                <p className="text-5xl sm:text-6xl font-black tracking-tight tabular-nums" style={{ color: 'var(--text-primary)' }}>
                   ${totalCartera.toLocaleString()}
                 </p>
-                <p className="text-zinc-500 text-[10px] mt-1.5 uppercase font-black tracking-widest">Cartera Total</p>
+                <p className="text-[10px] mt-1.5 uppercase font-black tracking-widest" style={{ color: 'var(--text-muted)' }}>Cartera Total</p>
                 
                 {/* Desglose rápido de loterías */}
                 <div className="mt-8 flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
                   {assignments.map(asg => (
-                    <div key={asg.id} className="bg-zinc-800/80 backdrop-blur-sm rounded-2xl px-4 py-3 border border-zinc-700/50 shrink-0 min-w-[100px]">
-                      <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest mb-1">{asg.lotteries?.name}</p>
-                      <p className="text-base font-black text-white">{asg.pieces_assigned} frac.</p>
+                    <div 
+                      key={asg.id} 
+                      className="backdrop-blur-sm rounded-2xl px-4 py-3 border shrink-0 min-w-[100px]"
+                      style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)' }}
+                    >
+                      <p className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>{asg.lotteries?.name}</p>
+                      <p className="text-base font-black" style={{ color: 'var(--text-primary)' }}>{asg.pieces_assigned} frac.</p>
                     </div>
                   ))}
                 </div>
               </>
             ) : (
               <div className="py-6">
-                <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs">Sin asignación para hoy.</p>
+                <p className="font-bold uppercase tracking-widest text-xs" style={{ color: 'var(--text-muted)' }}>Sin asignación para hoy.</p>
               </div>
             )}
           </div>
@@ -106,7 +129,7 @@ export default function VendorDashboard() {
         <section>
           <div className="flex items-center gap-2 mb-4 px-2">
             <Ticket className="w-4 h-4 text-indigo-400" />
-            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Tus Tareas</p>
+            <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Tus Tareas</p>
           </div>
           
           <div className="space-y-4">
@@ -126,25 +149,27 @@ export default function VendorDashboard() {
                         ? 'bg-emerald-500/5 border-emerald-500/20' 
                         : late 
                           ? 'bg-amber-500/5 border-amber-500/20' 
-                          : 'bg-zinc-900 border-zinc-800'
+                          : 'border'
                     }`}
+                    style={!isReported && !late ? { background: 'var(--bg-card)', borderColor: 'var(--border)' } : {}}
                   >
                     <div className="flex items-center gap-4">
                       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-                        isReported ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
-                      }`}>
+                        isReported ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'border'
+                      }`}
+                      style={isReported ? {} : { background: 'var(--bg-card-hover)', color: 'var(--text-secondary)', borderColor: 'var(--border-hover)' }}>
                         {isReported ? <CheckCircle2 size={24} /> : <Ticket size={24} />}
                       </div>
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <p className="text-base sm:text-lg font-black text-white leading-tight">{asg.lotteries?.name}</p>
+                          <p className="text-base sm:text-lg font-black leading-tight" style={{ color: 'var(--text-primary)' }}>{asg.lotteries?.name}</p>
                           <span className={`text-[8px] font-black px-2 py-0.5 rounded-md uppercase tracking-widest border ${
                             isMidday ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
                           }`}>
                             {isMidday ? 'Día' : 'Noche'}
                           </span>
                         </div>
-                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest flex items-center">
+                        <p className="text-[10px] font-bold uppercase tracking-widest flex items-center" style={{ color: 'var(--text-muted)' }}>
                           <Clock className="w-3 h-3 mr-1 opacity-50" />
                           Límite: {limitLabel}
                         </p>
@@ -156,7 +181,7 @@ export default function VendorDashboard() {
                         <div className="flex flex-col items-end">
                           <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Enviado</span>
                           {asg.reports[0].is_on_time ? (
-                            <span className="text-[8px] text-zinc-500 uppercase font-black tracking-widest mt-0.5">A tiempo</span>
+                            <span className="text-[8px] uppercase font-black tracking-widest mt-0.5" style={{ color: 'var(--text-muted)' }}>A tiempo</span>
                           ) : (
                             <span className="text-[8px] text-amber-500 uppercase font-black tracking-widest mt-0.5">Tarde</span>
                           )}
@@ -169,7 +194,7 @@ export default function VendorDashboard() {
                           <Link href={`/vendor/report/${asg.lotteries?.draw_time}?assignment_id=${asg.id}`}>
                             <button
                               className={`p-3 sm:p-4 rounded-xl transition-all active:scale-95 shadow-lg ${
-                                late ? 'bg-amber-500 text-zinc-950 hover:bg-amber-400 shadow-amber-500/20' : 'bg-indigo-500 text-white hover:bg-indigo-400 shadow-indigo-500/20'
+                                late ? 'bg-amber-500 text-black hover:bg-amber-400 shadow-amber-500/20' : 'bg-indigo-500 text-white hover:bg-indigo-400 shadow-indigo-500/20'
                               }`}
                             >
                               <Camera size={24} />
@@ -182,9 +207,12 @@ export default function VendorDashboard() {
                 );
               })
             ) : (
-              <div className="bg-zinc-900 rounded-3xl p-8 border border-zinc-800 border-dashed text-center">
-                <AlertTriangle className="mx-auto text-zinc-700 mb-4" size={40} />
-                <p className="text-zinc-500 text-xs font-black uppercase tracking-widest">No tienes tareas asignadas hoy.</p>
+              <div 
+                className="rounded-3xl p-8 border border-dashed text-center"
+                style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+              >
+                <AlertTriangle className="mx-auto mb-4" size={40} style={{ color: 'var(--border)' }} />
+                <p className="text-xs font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>No tienes tareas asignadas hoy.</p>
               </div>
             )}
           </div>

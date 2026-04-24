@@ -29,50 +29,59 @@ export default function OwnerDashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-zinc-950 pb-10">
+    <div className="min-h-screen pb-10" style={{ background: 'var(--bg-page)' }}>
       {/* Header */}
-      <div className="px-6 pt-8 pb-6 border-b border-zinc-800">
-        <p className="text-xs font-black text-zinc-500 uppercase tracking-widest mb-1">Propietario</p>
-        <h1 className="text-2xl font-black text-white tracking-tight">{name || 'Panel General'}</h1>
+      <div className="px-6 pt-8 pb-6 border-b" style={{ borderColor: 'var(--border)' }}>
+        <p className="text-xs font-black uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Propietario</p>
+        <h1 className="text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>{name || 'Panel General'}</h1>
       </div>
 
       {/* KPIs — fila compacta */}
-      <div className="grid grid-cols-4 gap-px bg-zinc-800 border-b border-zinc-800">
+      <div className="grid grid-cols-4 gap-px border-b" style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border)' }}>
         {[
           { label: 'Vendedores', value: '—' },
           { label: 'Reportes hoy', value: '—' },
           { label: 'Pendientes', value: '—' },
           { label: 'Ganancia hoy', value: '—' },
         ].map((kpi) => (
-          <div key={kpi.label} className="bg-zinc-950 px-4 py-5 text-center">
-            <div className="text-xl font-black text-white">{kpi.value}</div>
-            <div className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mt-0.5">{kpi.label}</div>
+          <div key={kpi.label} className="px-4 py-5 text-center" style={{ background: 'var(--bg-page)' }}>
+            <div className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>{kpi.value}</div>
+            <div className="text-[10px] font-bold uppercase tracking-wider mt-0.5" style={{ color: 'var(--text-muted)' }}>{kpi.label}</div>
           </div>
         ))}
       </div>
 
       {/* Nav list */}
       <div className="mt-6 px-4">
-        <p className="text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-3 ml-2">Módulos</p>
-        <div className="rounded-2xl overflow-hidden border border-zinc-800 divide-y divide-zinc-800">
+        <p className="text-[10px] font-black uppercase tracking-widest mb-3 ml-2" style={{ color: 'var(--text-decorative)' }}>Módulos</p>
+        <div 
+          className="rounded-2xl overflow-hidden border divide-y divide-[var(--border)]" 
+          style={{ borderColor: 'var(--border)' }}
+        >
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center justify-between px-4 py-4 bg-zinc-900 hover:bg-zinc-800 transition-colors group"
+                className="flex items-center justify-between px-4 py-4 transition-colors group"
+                style={{ background: 'var(--bg-card)' }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-card-hover)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--bg-card)' }}
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-9 h-9 rounded-xl bg-zinc-800 group-hover:bg-indigo-500/20 flex items-center justify-center transition-colors flex-shrink-0">
-                    <Icon size={18} className="text-zinc-400 group-hover:text-indigo-400 transition-colors" />
+                  <div 
+                    className="w-9 h-9 rounded-xl group-hover:bg-indigo-500/20 flex items-center justify-center transition-colors flex-shrink-0"
+                    style={{ background: 'var(--bg-card-hover)' }}
+                  >
+                    <Icon size={18} className="transition-colors" style={{ color: 'var(--text-secondary)' }} />
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-white leading-tight">{item.label}</div>
-                    <div className="text-xs text-zinc-500">{item.desc}</div>
+                    <div className="text-sm font-bold leading-tight" style={{ color: 'var(--text-primary)' }}>{item.label}</div>
+                    <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{item.desc}</div>
                   </div>
                 </div>
-                <ChevronRight size={16} className="text-zinc-600 group-hover:text-zinc-400 transition-colors flex-shrink-0" />
+                <ChevronRight size={16} className="transition-colors flex-shrink-0" style={{ color: 'var(--text-decorative)' }} />
               </Link>
             );
           })}

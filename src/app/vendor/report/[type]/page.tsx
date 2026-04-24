@@ -93,28 +93,37 @@ function ReportContent() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center" style={{ background: 'var(--bg-page)' }}>
         <div className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6">
           <CheckCircle2 className="w-12 h-12 text-emerald-400 animate-bounce" />
         </div>
-        <h1 className="text-3xl font-black text-white tracking-tight">¡ENVIADO!</h1>
-        <p className="text-zinc-500 mt-2 font-bold text-sm">Tu reporte se guardó correctamente.</p>
+        <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>¡ENVIADO!</h1>
+        <p className="mt-2 font-bold text-sm" style={{ color: 'var(--text-muted)' }}>Tu reporte se guardó correctamente.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-page)' }}>
       {/* Header */}
-      <div className="bg-zinc-900 border-b border-zinc-800 p-4 shadow-sm flex items-center justify-between">
-        <button onClick={() => router.back()} className="p-2 bg-zinc-800 rounded-xl text-zinc-400 hover:text-white transition-colors">
+      <div 
+        className="border-b p-4 shadow-sm flex items-center justify-between"
+        style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+      >
+        <button 
+          onClick={() => router.back()} 
+          className="p-2 rounded-xl transition-all"
+          style={{ background: 'var(--bg-card-hover)', color: 'var(--text-secondary)' }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-secondary)'}
+        >
           <ChevronLeft className="w-6 h-6" />
         </button>
         <div className="text-center flex-1">
-          <h1 className="font-black text-lg text-white uppercase tracking-tight">
+          <h1 className="font-black text-lg uppercase tracking-tight" style={{ color: 'var(--text-primary)' }}>
             {assignment?.lotteries?.name || 'Reporte'}
           </h1>
-          <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+          <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
             {reportType === 'midday' ? 'Mediodía' : 'Noche'}
           </p>
         </div>
@@ -123,15 +132,21 @@ function ReportContent() {
 
       <main className="flex-1 p-4 sm:p-6 flex flex-col space-y-6 sm:space-y-8">
         {/* Photo Container */}
-        <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-zinc-700 rounded-[2.5rem] bg-zinc-900 relative overflow-hidden shadow-2xl">
+        <div 
+          className="flex-1 flex flex-col items-center justify-center border-2 border-dashed rounded-[2.5rem] relative overflow-hidden shadow-2xl"
+          style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        >
           {preview ? (
             <img src={preview} alt="Preview" className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             <div className="text-center p-8">
-              <div className="w-20 h-20 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Camera className="w-10 h-10 text-zinc-500" />
+              <div 
+                className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
+                style={{ background: 'var(--bg-page)' }}
+              >
+                <Camera className="w-10 h-10" style={{ color: 'var(--text-muted)' }} />
               </div>
-              <p className="text-zinc-500 font-black text-sm uppercase tracking-widest">SIN FOTO</p>
+              <p className="font-black text-sm uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>SIN FOTO</p>
             </div>
           )}
           
@@ -178,7 +193,10 @@ function ReportContent() {
           {preview && !loading && (
             <button 
               onClick={() => { setPhoto(null); setPreview(null); }}
-              className="w-full py-4 text-zinc-500 font-black text-xs sm:text-sm uppercase tracking-widest hover:text-white transition-colors"
+              className="w-full py-4 font-black text-xs sm:text-sm uppercase tracking-widest transition-colors"
+              style={{ color: 'var(--text-muted)' }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
             >
               TOMAR OTRA FOTO
             </button>
@@ -198,7 +216,10 @@ function ReportContent() {
 export default function ReportSubmissionPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-zinc-950 uppercase font-black tracking-widest text-zinc-500 text-xs">
+      <div 
+        className="min-h-screen flex items-center justify-center uppercase font-black tracking-widest text-xs"
+        style={{ background: 'var(--bg-page)', color: 'var(--text-muted)' }}
+      >
         Cargando...
       </div>
     }>

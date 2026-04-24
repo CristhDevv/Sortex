@@ -56,38 +56,42 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="space-y-6 sm:space-y-8 p-4 sm:p-6 bg-zinc-950 min-h-screen">
+    <div className="space-y-6 sm:space-y-8 p-4 sm:p-6 min-h-screen" style={{ background: 'var(--bg-page)' }}>
       <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Historial de Recaudos</h1>
-          <p className="text-zinc-500 font-medium text-sm sm:text-base mt-1">Consulta liquidaciones pasadas y métricas de desempeño.</p>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Historial de Recaudos</h1>
+          <p className="font-medium text-sm sm:text-base mt-1" style={{ color: 'var(--text-muted)' }}>Consulta liquidaciones pasadas y métricas de desempeño.</p>
         </div>
         
-        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 bg-zinc-900 p-4 sm:p-5 rounded-2xl border border-zinc-800 sm:items-end w-full lg:w-auto">
+        <div 
+          className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 p-4 sm:p-5 rounded-2xl border sm:items-end w-full lg:w-auto"
+          style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        >
           <div className="flex-1 sm:flex-none">
-            <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 tracking-widest ml-1">Desde</label>
+            <label className="block text-[10px] font-black uppercase mb-2 tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>Desde</label>
             <input 
               type="date" 
               value={startDate} 
               onChange={e => setStartDate(e.target.value)} 
-              className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-bold" 
-            />
+              className="w-full border rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-bold" 
+              style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}            />
           </div>
           <div className="flex-1 sm:flex-none">
-            <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 tracking-widest ml-1">Hasta</label>
+            <label className="block text-[10px] font-black uppercase mb-2 tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>Hasta</label>
             <input 
               type="date" 
               value={endDate} 
               onChange={e => setEndDate(e.target.value)} 
-              className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-bold" 
-            />
+              className="w-full border rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-bold" 
+              style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}            />
           </div>
           <div className="flex-1 sm:flex-none">
-            <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 tracking-widest ml-1">Vendedor</label>
+            <label className="block text-[10px] font-black uppercase mb-2 tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>Vendedor</label>
             <select 
               value={vendorFilter} 
               onChange={e => setVendorFilter(e.target.value)} 
-              className="w-full bg-zinc-800 border border-zinc-700 text-white rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-bold appearance-none min-w-[200px]"
+              className="w-full border rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none text-sm font-bold appearance-none min-w-[200px]"
+              style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
             >
               <option value="all">Todos los vendedores</option>
               {vendors.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
@@ -121,46 +125,66 @@ export default function HistoryPage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-20 text-zinc-500 animate-pulse text-sm font-bold tracking-widest uppercase">
+        <div className="text-center py-20 animate-pulse text-sm font-bold tracking-widest uppercase" style={{ color: 'var(--text-muted)' }}>
           Analizando datos históricos...
         </div>
       ) : data.length === 0 ? (
-        <div className="text-center py-20 bg-zinc-900 rounded-3xl border border-zinc-800 border-dashed">
-          <Calendar className="mx-auto text-zinc-700 mb-4" size={48} />
-          <p className="text-zinc-500 font-bold text-sm">No hay registros en este periodo</p>
+        <div 
+          className="text-center py-20 rounded-3xl border border-dashed"
+          style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        >
+          <Calendar className="mx-auto mb-4" size={48} style={{ color: 'var(--border)' }} />
+          <p className="font-bold text-sm" style={{ color: 'var(--text-muted)' }}>No hay registros en este periodo</p>
         </div>
       ) : (
-        <div className="bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-800 overflow-hidden">
-          <div className="divide-y divide-zinc-800">
+        <div 
+          className="rounded-2xl shadow-2xl border overflow-hidden"
+          style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        >
+          <div className="divide-y divide-[var(--border)]">
             {data.map((item) => (
-              <div key={item.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-zinc-800/50 transition-colors gap-4">
+              <div 
+                key={item.id} 
+                className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between transition-colors gap-4"
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-card-hover)' }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+              >
                 
                 <div className="flex items-center gap-4">
-                  <div className="hidden sm:flex flex-col items-center justify-center bg-zinc-950 p-2.5 rounded-xl border border-zinc-800 min-w-[4rem]">
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{format(new Date(item.date + 'T12:00:00'), "MMM", { locale: es })}</span>
-                    <span className="text-lg font-black text-white leading-none mt-0.5">{format(new Date(item.date + 'T12:00:00'), "dd")}</span>
+                  <div 
+                    className="hidden sm:flex flex-col items-center justify-center p-2.5 rounded-xl border min-w-[4rem]"
+                    style={{ background: 'var(--bg-page)', borderColor: 'var(--border)' }}
+                  >
+                    <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>{format(new Date(item.date + 'T12:00:00'), "MMM", { locale: es })}</span>
+                    <span className="text-lg font-black leading-none mt-0.5" style={{ color: 'var(--text-primary)' }}>{format(new Date(item.date + 'T12:00:00'), "dd")}</span>
                   </div>
 
                   <div>
-                    <div className="text-sm sm:text-base font-black text-white leading-tight">{item.vendors.name}</div>
-                    <div className="text-xs font-bold text-zinc-500 mt-0.5">@{item.vendors.alias}</div>
+                    <div className="text-sm sm:text-base font-black leading-tight" style={{ color: 'var(--text-primary)' }}>{item.vendors.name}</div>
+                    <div className="text-xs font-bold mt-0.5" style={{ color: 'var(--text-muted)' }}>@{item.vendors.alias}</div>
                     
-                    <div className="sm:hidden mt-1.5 text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                    <div className="sm:hidden mt-1.5 text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
                       {format(new Date(item.date + 'T12:00:00'), "d MMM yyyy", { locale: es })}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-10 w-full sm:w-auto border-t border-zinc-800/50 sm:border-0 pt-3 sm:pt-0">
+                <div 
+                  className="flex items-center justify-between sm:justify-end gap-6 sm:gap-10 w-full sm:w-auto border-t sm:border-0 pt-3 sm:pt-0"
+                  style={{ borderColor: 'var(--border-hover)' }} // subtle separator
+                >
                   <div className="text-left sm:text-center">
-                    <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Vendidas</div>
-                    <div className="text-sm font-bold text-white bg-zinc-950 px-3 py-1 rounded-lg border border-zinc-800">
-                      {item.pieces_assigned - item.pieces_unsold} / <span className="text-zinc-500">{item.pieces_assigned}</span>
+                    <div className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>Vendidas</div>
+                    <div 
+                      className="text-sm font-bold px-3 py-1 rounded-lg border"
+                      style={{ background: 'var(--bg-page)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
+                    >
+                      {item.pieces_assigned - item.pieces_unsold} / <span style={{ color: 'var(--text-muted)' }}>{item.pieces_assigned}</span>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Monto Recaudado</div>
+                    <div className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>Monto Recaudado</div>
                     <div className="text-base sm:text-xl font-black text-indigo-400">
                       ${item.profit_cop.toLocaleString()}
                     </div>
@@ -178,13 +202,18 @@ export default function HistoryPage() {
 
 function StatCard({ title, value, icon, bgColor, borderColor }: any) {
   return (
-    <div className="bg-zinc-900 p-5 sm:p-6 rounded-2xl border border-zinc-800 shadow-sm flex items-center gap-4 hover:border-zinc-700 transition-colors">
+    <div 
+      className="p-5 sm:p-6 rounded-2xl border shadow-sm flex items-center gap-4 transition-colors"
+      style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-hover)' }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)' }}
+    >
       <div className={`p-3 sm:p-4 ${bgColor} border ${borderColor} rounded-xl transition-colors flex-shrink-0`}>
         {icon}
       </div>
       <div>
-        <p className="text-[10px] sm:text-xs font-black uppercase text-zinc-500 tracking-widest mb-0.5">{title}</p>
-        <p className="text-2xl sm:text-3xl font-black text-white">{value}</p>
+        <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>{title}</p>
+        <p className="text-2xl sm:text-3xl font-black" style={{ color: 'var(--text-primary)' }}>{value}</p>
       </div>
     </div>
   );

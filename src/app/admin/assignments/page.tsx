@@ -102,18 +102,22 @@ export default function AssignmentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-4 sm:p-6 space-y-6">
+    <div className="min-h-screen p-4 sm:p-6 space-y-6" style={{ background: 'var(--bg-page)' }}>
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight">Asignaciones</h1>
-          <div className="mt-2 flex items-center bg-zinc-900 px-3 py-2 rounded-xl border border-zinc-800 w-fit">
-            <Calendar className="text-zinc-500 mr-2" size={16} />
+          <h1 className="text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Asignaciones</h1>
+          <div 
+            className="mt-2 flex items-center px-3 py-2 rounded-xl border w-fit"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
+            <Calendar size={16} style={{ color: 'var(--text-muted)' }} className="mr-2" />
             <input
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="bg-transparent font-bold text-zinc-300 border-none focus:ring-0 p-0 text-sm outline-none"
+              className="bg-transparent font-bold border-none focus:ring-0 p-0 text-sm outline-none"
+              style={{ color: 'var(--text-secondary)' }}
             />
           </div>
         </div>
@@ -128,31 +132,42 @@ export default function AssignmentsPage() {
 
       {/* Assignments List */}
       {loading ? (
-        <div className="text-center py-12 text-zinc-500 animate-pulse text-sm font-bold tracking-widest uppercase">
+        <div className="text-center py-12 animate-pulse text-sm font-bold tracking-widest uppercase" style={{ color: 'var(--text-muted)' }}>
           Buscando asignaciones...
         </div>
       ) : assignments.length === 0 ? (
-        <div className="text-center py-16 bg-zinc-900 rounded-3xl border border-zinc-800 border-dashed">
-          <ClipboardList className="mx-auto text-zinc-700 mb-4" size={48} />
-          <p className="text-zinc-500 font-bold text-sm">No hay asignaciones para este día</p>
+        <div 
+          className="text-center py-16 rounded-3xl border border-dashed"
+          style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        >
+          <ClipboardList className="mx-auto mb-4" size={48} style={{ color: 'var(--text-muted)' }} />
+          <p className="font-bold text-sm" style={{ color: 'var(--text-muted)' }}>No hay asignaciones para este día</p>
         </div>
       ) : (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
-          <div className="divide-y divide-zinc-800">
+        <div 
+          className="rounded-2xl overflow-hidden shadow-2xl border"
+          style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+        >
+          <div className="divide-y divide-[var(--border)]">
             {assignments.map((asg) => {
               const middayReport = asg.reports?.find((r: any) => r.report_type === 'midday');
               const nightReport = asg.reports?.find((r: any) => r.report_type === 'night');
               
               return (
-                <div key={asg.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-zinc-800/50 transition-colors group gap-4">
+                <div 
+                  key={asg.id} 
+                  className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between transition-colors group gap-4"
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-card-hover)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                >
                   {/* Info block */}
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center flex-shrink-0 border border-indigo-500/20">
                       <User className="text-indigo-400" size={20} />
                     </div>
                     <div>
-                      <div className="text-sm sm:text-base font-black text-white leading-tight">{asg.vendors?.name}</div>
-                      <div className="text-xs font-bold text-zinc-500">@{asg.vendors?.alias}</div>
+                      <div className="text-sm sm:text-base font-black leading-tight" style={{ color: 'var(--text-primary)' }}>{asg.vendors?.name}</div>
+                      <div className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>@{asg.vendors?.alias}</div>
                     </div>
                   </div>
 
@@ -160,9 +175,9 @@ export default function AssignmentsPage() {
                   <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 w-full sm:w-auto">
                     {/* Lottery */}
                     <div className="hidden sm:block">
-                      <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Lotería</div>
-                      <div className="text-sm font-bold text-zinc-300 flex items-center gap-1.5">
-                        <Ticket size={14} className="text-zinc-500" />
+                      <div className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>Lotería</div>
+                      <div className="text-sm font-bold flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
+                        <Ticket size={14} style={{ color: 'var(--text-muted)' }} />
                         {asg.lotteries?.name}
                       </div>
                     </div>
@@ -178,16 +193,19 @@ export default function AssignmentsPage() {
 
                     {/* Pieces */}
                     <div className="text-center min-w-[3rem]">
-                      <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Frac.</div>
-                      <div className="text-base font-black text-white">{asg.pieces_assigned}</div>
+                      <div className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>Frac.</div>
+                      <div className="text-base font-black" style={{ color: 'var(--text-primary)' }}>{asg.pieces_assigned}</div>
                     </div>
 
                     {/* Reports */}
-                    <div className="flex gap-1.5 items-center bg-zinc-950/50 p-1.5 rounded-xl border border-zinc-800">
-                      <div title="Mediodía" className={`w-6 h-6 rounded-lg flex items-center justify-center ${middayReport ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-zinc-800 text-zinc-600'}`}>
+                    <div 
+                      className="flex gap-1.5 items-center p-1.5 rounded-xl border"
+                      style={{ background: 'var(--bg-page)', borderColor: 'var(--border)' }}
+                    >
+                      <div title="Mediodía" className={`w-6 h-6 rounded-lg flex items-center justify-center border ${middayReport ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'border-transparent'}`} style={{ background: middayReport ? undefined : 'var(--bg-card-hover)', color: middayReport ? undefined : 'var(--text-muted)' }}>
                         {middayReport ? <CheckCircle2 size={14} /> : <Circle size={14} />}
                       </div>
-                      <div title="Noche" className={`w-6 h-6 rounded-lg flex items-center justify-center ${nightReport ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-zinc-800 text-zinc-600'}`}>
+                      <div title="Noche" className={`w-6 h-6 rounded-lg flex items-center justify-center border ${nightReport ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'border-transparent'}`} style={{ background: nightReport ? undefined : 'var(--bg-card-hover)', color: nightReport ? undefined : 'var(--text-muted)' }}>
                         {nightReport ? <CheckCircle2 size={14} /> : <Circle size={14} />}
                       </div>
                     </div>
@@ -211,24 +229,34 @@ export default function AssignmentsPage() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+          <div 
+            className="w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl border animate-in fade-in zoom-in-95 duration-200"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-black text-white tracking-tight">Nueva Asignación</h2>
-              <button onClick={() => setShowModal(false)} className="text-zinc-500 hover:text-zinc-300 transition-colors p-1">
+              <h2 className="text-xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Nueva Asignación</h2>
+              <button 
+                onClick={() => setShowModal(false)} 
+                className="transition-colors p-1"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+              >
                 <XCircle size={24} />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Vendedor</label>
+                <label className="text-[10px] font-black uppercase tracking-widest ml-1 mb-2 block" style={{ color: 'var(--text-muted)' }}>Vendedor</label>
                 <select
                   value={selectedVendor}
                   onChange={(e) => setSelectedVendor(e.target.value)}
                   required
-                  className="w-full px-4 py-3.5 bg-zinc-800 border border-zinc-700 text-white font-medium rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all appearance-none"
+                  className="w-full px-4 py-3.5 border font-medium rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all appearance-none"
+                  style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
                 >
-                  <option value="" className="text-zinc-500">Seleccionar...</option>
+                  <option value="" style={{ color: 'var(--text-muted)' }}>Seleccionar...</option>
                   {vendors.map((v) => (
                     <option key={v.id} value={v.id}>{v.name} (@{v.alias})</option>
                   ))}
@@ -236,14 +264,15 @@ export default function AssignmentsPage() {
               </div>
 
               <div>
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Lotería</label>
+                <label className="text-[10px] font-black uppercase tracking-widest ml-1 mb-2 block" style={{ color: 'var(--text-muted)' }}>Lotería</label>
                 <select
                   value={selectedLottery}
                   onChange={(e) => setSelectedLottery(e.target.value)}
                   required
-                  className="w-full px-4 py-3.5 bg-zinc-800 border border-zinc-700 text-white font-medium rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all appearance-none"
+                  className="w-full px-4 py-3.5 border font-medium rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all appearance-none"
+                  style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
                 >
-                  <option value="" className="text-zinc-500">Seleccionar...</option>
+                  <option value="" style={{ color: 'var(--text-muted)' }}>Seleccionar...</option>
                   {lotteries.map((l) => (
                     <option key={l.id} value={l.id}>{l.name} ({l.draw_time === 'midday' ? 'Día' : 'Noche'})</option>
                   ))}
@@ -252,24 +281,26 @@ export default function AssignmentsPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Fecha</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest ml-1 mb-2 block" style={{ color: 'var(--text-muted)' }}>Fecha</label>
                   <input
                     type="date"
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     required
-                    className="w-full px-4 py-3.5 bg-zinc-800 border border-zinc-700 text-white font-medium rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                    className="w-full px-4 py-3.5 border font-medium rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                    style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Fracciones</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest ml-1 mb-2 block" style={{ color: 'var(--text-muted)' }}>Fracciones</label>
                   <input
                     type="number"
                     value={piecesAssigned}
                     onChange={(e) => setPiecesAssigned(parseInt(e.target.value))}
                     required
                     min="1"
-                    className="w-full px-4 py-3.5 bg-zinc-800 border border-zinc-700 text-white font-black rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-center"
+                    className="w-full px-4 py-3.5 border font-black rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-center"
+                    style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
                   />
                 </div>
               </div>

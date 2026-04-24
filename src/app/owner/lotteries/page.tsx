@@ -100,12 +100,15 @@ export default function OwnerLotteriesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-4 sm:p-6 space-y-6">
+    <div className="min-h-screen p-4 sm:p-6 space-y-6" style={{ background: 'var(--bg-page)' }}>
       {/* Header */}
-      <div className="flex justify-between items-center bg-zinc-900 border border-zinc-800 p-4 sm:p-6 rounded-2xl">
+      <div 
+        className="flex justify-between items-center p-4 sm:p-6 rounded-2xl border"
+        style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+      >
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">Loterías</h1>
-          <p className="text-zinc-500 font-medium text-xs sm:text-sm mt-1">Configuración de sorteos y premios</p>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Loterías</h1>
+          <p className="font-medium text-xs sm:text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Configuración de sorteos y premios</p>
         </div>
         <button 
           onClick={() => { resetForm(); setIsModalOpen(true); }}
@@ -118,28 +121,42 @@ export default function OwnerLotteriesPage() {
       {/* Lotteries List */}
       <div className="space-y-6">
         {loading ? (
-          <div className="text-center py-20 text-zinc-500 animate-pulse text-sm font-bold tracking-widest uppercase">
-            Cargando loterías...
+          <div className="text-center py-20 animate-pulse text-sm font-bold tracking-widest uppercase" style={{ color: 'var(--text-muted)' }}>
+            Obteniendo configuraciones...
           </div>
         ) : lotteries.length === 0 ? (
-          <div className="text-center py-20 bg-zinc-900 rounded-3xl border border-zinc-800 border-dashed">
-            <Ticket className="mx-auto text-zinc-700 mb-4" size={48} />
-            <p className="text-zinc-500 font-bold text-sm">No hay loterías configuradas</p>
+          <div 
+            className="text-center py-20 rounded-3xl border border-dashed"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
+            <Ticket className="mx-auto mb-4" size={48} style={{ color: 'var(--border)' }} />
+            <p className="font-bold text-sm" style={{ color: 'var(--text-muted)' }}>No hay loterías configuradas</p>
           </div>
         ) : (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
-            <div className="divide-y divide-zinc-800">
-              {lotteries.map(lottery => (
-                <div key={lottery.id} className={`p-4 sm:p-6 hover:bg-zinc-800/50 transition-colors ${!lottery.is_active ? 'opacity-50 grayscale' : ''}`}>
+          <div 
+            className="rounded-2xl overflow-hidden shadow-2xl border"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
+            <div className="divide-y divide-[var(--border)]">
+              {lotteries.map((lottery) => (
+                <div 
+                  key={lottery.id} 
+                  className={`p-4 sm:p-6 transition-colors ${!lottery.is_active ? 'opacity-50 grayscale' : ''}`}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-card-hover)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                >
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                     
                     {/* Left: Info */}
                     <div className="flex items-center gap-4">
-                      <div className={`p-3 rounded-xl border flex-shrink-0 ${lottery.is_active ? 'bg-indigo-500/10 border-indigo-500/20' : 'bg-zinc-800 border-zinc-700'}`}>
-                        <Ticket className={lottery.is_active ? 'text-indigo-400' : 'text-zinc-500'} size={24} />
+                      <div 
+                        className={`p-3 rounded-xl border flex-shrink-0 transition-colors ${lottery.is_active ? 'bg-indigo-500/10 border-indigo-500/20' : ''}`}
+                        style={lottery.is_active ? {} : { background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)' }}
+                      >
+                        <Ticket className={lottery.is_active ? 'text-indigo-400' : ''} style={lottery.is_active ? {} : { color: 'var(--text-muted)' }} size={24} />
                       </div>
-                      <div>
-                        <h3 className="text-lg sm:text-xl font-black text-white leading-tight mb-2">{lottery.name}</h3>
+                      <div className="flex-1">
+                        <h3 className="text-lg sm:text-xl font-black leading-tight mb-2" style={{ color: 'var(--text-primary)' }}>{lottery.name}</h3>
                         <div className="flex flex-wrap gap-2">
                           <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest border ${lottery.frequency === 'daily' ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
                             {lottery.frequency === 'daily' ? 'Diaria' : 'Mensual'}
@@ -154,19 +171,19 @@ export default function OwnerLotteriesPage() {
                     {/* Middle: Stats */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 flex-1 lg:mx-8">
                       <div>
-                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Premio Mayor</p>
-                        <p className="text-sm sm:text-base font-black text-white">${lottery.prize_cop.toLocaleString()}</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Premio Mayor</p>
+                        <p className="text-sm sm:text-base font-black" style={{ color: 'var(--text-primary)' }}>${lottery.prize_cop.toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Fracciones</p>
-                        <p className="text-sm sm:text-base font-black text-white">{lottery.pieces_per_ticket}</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Fracciones</p>
+                        <p className="text-sm sm:text-base font-black" style={{ color: 'var(--text-primary)' }}>{lottery.pieces_per_ticket}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Precio Frac.</p>
-                        <p className="text-sm sm:text-base font-black text-zinc-300">${lottery.piece_price_cop.toLocaleString()}</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Precio Frac.</p>
+                        <p className="text-sm sm:text-base font-black" style={{ color: 'var(--text-secondary)' }}>${lottery.piece_price_cop.toLocaleString()}</p>
                       </div>
                       <div>
-                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Ganancia Frac.</p>
+                        <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Ganancia Frac.</p>
                         <p className="text-sm sm:text-base font-black text-indigo-400">${lottery.piece_profit_cop.toLocaleString()}</p>
                       </div>
                     </div>
@@ -175,7 +192,10 @@ export default function OwnerLotteriesPage() {
                     <div className="flex gap-2 justify-end">
                       <button 
                         onClick={() => handleEdit(lottery)}
-                        className="p-3 rounded-xl bg-zinc-800 text-zinc-400 border border-zinc-700 hover:bg-zinc-700 hover:text-white transition-all"
+                        className="p-3 rounded-xl border transition-all"
+                        style={{ background: 'var(--bg-card-hover)', color: 'var(--text-secondary)', borderColor: 'var(--border-hover)' }}
+                        onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--border)' }}
+                        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'var(--bg-card-hover)' }}
                       >
                         <Edit3 size={20} />
                       </button>
@@ -198,97 +218,113 @@ export default function OwnerLotteriesPage() {
       {/* Modal Form */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 w-full max-w-xl rounded-3xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh] shadow-2xl">
-            <div className="flex justify-between items-center mb-8 border-b border-zinc-800 pb-4">
-              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+          <div 
+            className="w-full max-w-xl rounded-3xl p-6 sm:p-8 animate-in fade-in zoom-in-95 duration-200 overflow-y-auto max-h-[90vh] shadow-2xl border"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
+            <div className="flex justify-between items-center mb-8 border-b pb-4" style={{ borderColor: 'var(--border)' }}>
+              <h2 className="text-xl sm:text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
                 {editingLottery ? 'Editar Lotería' : 'Nueva Lotería'}
               </h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-zinc-500 hover:text-white transition-colors">
+              <button 
+                onClick={() => setIsModalOpen(false)} 
+                className="transition-colors"
+                style={{ color: 'var(--text-muted)' }}
+                onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'}
+                onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
+              >
                 <XCircle size={28} />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Nombre de la Lotería</label>
+                <label className="text-[10px] font-black uppercase tracking-widest ml-1 mb-2 block" style={{ color: 'var(--text-muted)' }}>Nombre de la Lotería</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ej: Lotería de Medellín"
                   required
-                  className="w-full px-5 py-4 bg-zinc-800 border border-zinc-700 text-white placeholder:text-zinc-600 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full px-5 py-4 border rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Premio COP</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest ml-1 mb-2 block" style={{ color: 'var(--text-muted)' }}>Premio COP</label>
                   <input
                     type="number"
                     value={prizeCop}
                     onChange={(e) => setPrizeCop(e.target.value)}
                     placeholder="0"
                     required
-                    className="w-full px-5 py-4 bg-zinc-800 border border-zinc-700 text-white placeholder:text-zinc-600 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    className="w-full px-5 py-4 border rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Fracciones x Billete</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest ml-1 mb-2 block" style={{ color: 'var(--text-muted)' }}>Fracciones x Billete</label>
                   <input
                     type="number"
                     value={piecesPerTicket}
                     onChange={(e) => setPiecesPerTicket(e.target.value)}
                     placeholder="Ej: 3"
                     required
-                    className="w-full px-5 py-4 bg-zinc-800 border border-zinc-700 text-white placeholder:text-zinc-600 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    className="w-full px-5 py-4 border rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Precio Fracción</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest ml-1 mb-2 block" style={{ color: 'var(--text-muted)' }}>Precio Fracción</label>
                   <input
                     type="number"
                     value={piecePriceCop}
                     onChange={(e) => setPiecePriceCop(e.target.value)}
                     placeholder="0"
                     required
-                    className="w-full px-5 py-4 bg-zinc-800 border border-zinc-700 text-white placeholder:text-zinc-600 rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    className="w-full px-5 py-4 border rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Ganancia Fracción</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest ml-1 mb-2 block" style={{ color: 'var(--text-muted)' }}>Ganancia Fracción</label>
                   <input
                     type="number"
                     value={pieceProfitCop}
                     onChange={(e) => setPieceProfitCop(e.target.value)}
                     placeholder="0"
                     required
-                    className="w-full px-5 py-4 bg-zinc-800 border border-zinc-700 text-indigo-400 placeholder:text-zinc-600 rounded-xl font-black focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    className="w-full px-5 py-4 border rounded-xl font-black focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Frecuencia</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest ml-1 mb-2 block" style={{ color: 'var(--text-muted)' }}>Frecuencia</label>
                   <select
                     value={frequency}
                     onChange={(e) => setFrequency(e.target.value)}
-                    className="w-full px-5 py-4 bg-zinc-800 border border-zinc-700 text-white rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none"
+                    className="w-full px-5 py-4 border rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none"
+                    style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
                   >
                     <option value="daily">Diaria</option>
                     <option value="monthly">Mensual</option>
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-2 block">Jornada</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest ml-1 mb-2 block" style={{ color: 'var(--text-muted)' }}>Jornada</label>
                   <select
                     value={drawTime}
                     onChange={(e) => setDrawTime(e.target.value)}
-                    className="w-full px-5 py-4 bg-zinc-800 border border-zinc-700 text-white rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none"
+                    className="w-full px-5 py-4 border rounded-xl font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none"
+                    style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
                   >
                     <option value="midday">Mediodía</option>
                     <option value="night">Noche</option>

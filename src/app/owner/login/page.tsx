@@ -33,11 +33,22 @@ export default function OwnerLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-950 p-4">
-      <div className="max-w-md w-full bg-zinc-900 rounded-3xl border border-zinc-800 shadow-2xl p-8 sm:p-10">
+    <div 
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: 'var(--bg-page)' }}
+    >
+      <div 
+        className="max-w-md w-full rounded-3xl border shadow-2xl p-8 sm:p-10"
+        style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+      >
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-black text-white tracking-tight">SORTEX</h1>
-          <p className="text-zinc-500 mt-2 font-black uppercase tracking-widest text-[10px] sm:text-xs">Acceso Propietario</p>
+          <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>SORTEX</h1>
+          <p 
+            className="mt-2 font-black uppercase tracking-widest text-[10px] sm:text-xs"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            Acceso Propietario
+          </p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
@@ -48,25 +59,27 @@ export default function OwnerLoginPage() {
           )}
 
           <div>
-            <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 tracking-widest ml-1">Email</label>
+            <label className="block text-[10px] font-black uppercase mb-2 tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="block w-full px-5 py-4 bg-zinc-800 border border-zinc-700 rounded-2xl text-base sm:text-lg font-bold text-white focus:ring-2 focus:ring-indigo-500 placeholder-zinc-600 transition-all outline-none"
+              className="block w-full px-5 py-4 border rounded-2xl text-base sm:text-lg font-bold focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+              style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
               placeholder="propietario@sortex.com"
             />
           </div>
 
           <div>
-            <label className="block text-[10px] font-black text-zinc-500 uppercase mb-2 tracking-widest ml-1">Contraseña</label>
+            <label className="block text-[10px] font-black uppercase mb-2 tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>Contraseña</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="block w-full px-5 py-4 bg-zinc-800 border border-zinc-700 rounded-2xl text-base sm:text-lg font-bold text-white focus:ring-2 focus:ring-indigo-500 placeholder-zinc-600 transition-all outline-none"
+              className="block w-full px-5 py-4 border rounded-2xl text-base sm:text-lg font-bold focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+              style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
               placeholder="••••••••"
             />
           </div>

@@ -28,37 +28,49 @@ export default function VendorLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-indigo-600 p-4">
-      <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl p-10 transform transition-all">
+    <div 
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{ background: 'var(--bg-page)' }}
+    >
+      <div 
+        className="max-w-md w-full rounded-3xl border shadow-2xl p-8 sm:p-10"
+        style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+      >
         <div className="text-center mb-10">
-          <h1 className="text-4xl font-black text-indigo-600 tracking-tight">SORTEX</h1>
-          <p className="text-gray-500 mt-2 font-medium">Portal de Vendedores</p>
+          <h1 className="text-4xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>SORTEX</h1>
+          <p 
+            className="mt-2 font-black uppercase tracking-widest text-[10px] sm:text-xs"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            Portal de Vendedores
+          </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-8">
+        <form onSubmit={handleLogin} className="space-y-6">
           {error && (
-            <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-sm border border-red-100 flex items-center animate-shake">
-              <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0" />
+            <div className="bg-rose-500/10 text-rose-500 p-4 rounded-2xl text-sm border border-rose-500/20 font-bold flex items-center justify-center animate-pulse">
+              <AlertCircle className="w-5 h-5 mr-2 flex-shrink-0" />
               {error}
             </div>
           )}
 
           <div className="space-y-6">
             <div className="relative">
-              <User className="absolute left-4 top-4 text-gray-400 w-6 h-6" />
+              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6" style={{ color: 'var(--text-muted)' }} />
               <input
                 type="text"
                 value={alias}
                 onChange={(e) => setAlias(e.target.value.toLowerCase())}
                 required
                 autoCapitalize="none"
-                className="block w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-xl font-semibold text-gray-900 focus:ring-4 focus:ring-indigo-100 placeholder-gray-400 transition-all"
+                className="block w-full pl-12 pr-4 py-4 border rounded-2xl text-lg font-bold focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
                 placeholder="Tu alias / usuario"
               />
             </div>
 
             <div className="relative">
-              <Lock className="absolute left-4 top-4 text-gray-400 w-6 h-6" />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6" style={{ color: 'var(--text-muted)' }} />
               <input
                 type="password"
                 maxLength={4}
@@ -67,7 +79,8 @@ export default function VendorLoginPage() {
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
                 required
-                className="block w-full pl-12 pr-4 py-4 bg-gray-50 border-none rounded-2xl text-2xl font-black tracking-[0.5em] text-gray-900 focus:ring-4 focus:ring-indigo-100 placeholder-gray-400 transition-all"
+                className="block w-full pl-12 pr-4 py-4 border rounded-2xl text-2xl font-black tracking-[0.5em] focus:ring-2 focus:ring-indigo-500 transition-all outline-none"
+                style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
                 placeholder="PIN"
               />
             </div>
@@ -76,13 +89,13 @@ export default function VendorLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-5 bg-indigo-600 text-white rounded-2xl text-xl font-bold hover:bg-indigo-700 active:scale-95 transition-all shadow-xl shadow-indigo-200 disabled:opacity-50"
+            className="w-full py-5 bg-indigo-500 text-white rounded-2xl text-lg sm:text-xl font-black hover:bg-indigo-600 active:scale-95 transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 tracking-wide mt-4"
           >
-            {loading ? 'Entrando...' : 'INGRESAR'}
+            {loading ? 'ENTRANDO...' : 'INGRESAR'}
           </button>
         </form>
         
-        <p className="text-center text-gray-400 mt-10 text-sm">
+        <p className="text-center mt-8 text-xs font-bold tracking-wide" style={{ color: 'var(--text-decorative)' }}>
           Si olvidaste tu PIN, contacta al administrador.
         </p>
       </div>

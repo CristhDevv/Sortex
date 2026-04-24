@@ -123,15 +123,16 @@ export default function LiquidationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-4 sm:p-6 space-y-6">
+    <div className="min-h-screen p-4 sm:p-6 space-y-6" style={{ background: 'var(--bg-page)' }}>
       <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight">Liquidaciones</h1>
+          <h1 className="text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Liquidaciones</h1>
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="mt-2 block px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-sm font-bold text-zinc-300 focus:ring-2 focus:ring-indigo-500 outline-none transition-all w-fit"
+            className="mt-2 block px-4 py-2 border rounded-xl text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none transition-all w-fit"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
           />
         </div>
         
@@ -152,31 +153,45 @@ export default function LiquidationsPage() {
         </div>
 
         {loading ? (
-          <div className="text-center py-12 text-zinc-500 animate-pulse text-sm font-bold tracking-widest uppercase">
+          <div className="text-center py-12 animate-pulse text-sm font-bold tracking-widest uppercase" style={{ color: 'var(--text-muted)' }}>
             Procesando datos...
           </div>
         ) : data.length === 0 ? (
-          <div className="text-center py-16 bg-zinc-900 rounded-3xl border border-zinc-800 border-dashed">
-            <Calculator className="mx-auto text-zinc-700 mb-4" size={48} />
-            <p className="text-zinc-500 font-bold text-sm">No hay asignaciones para liquidar en esta fecha</p>
+          <div 
+            className="text-center py-16 rounded-3xl border border-dashed"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
+            <Calculator className="mx-auto mb-4" size={48} style={{ color: 'var(--border)' }} />
+            <p className="font-bold text-sm" style={{ color: 'var(--text-muted)' }}>No hay asignaciones para liquidar en esta fecha</p>
           </div>
         ) : (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
-            <div className="divide-y divide-zinc-800">
+          <div 
+            className="rounded-2xl overflow-hidden shadow-2xl border"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
+            <div className="divide-y divide-[var(--border)]">
               {data.map((item) => {
                 const liq = item.liquidations?.[0];
                 const isMidday = item.lotteries?.draw_time === 'midday';
 
                 return (
-                  <div key={item.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-zinc-800/50 transition-colors group gap-4">
+                  <div 
+                    key={item.id} 
+                    className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between transition-colors group gap-4"
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-card-hover)' }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                  >
                     {/* Info Block */}
                     <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-zinc-800 rounded-xl flex items-center justify-center flex-shrink-0 border border-zinc-700">
-                        <User className="text-zinc-400" size={20} />
+                      <div 
+                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border"
+                        style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)' }}
+                      >
+                        <User style={{ color: 'var(--text-muted)' }} size={20} />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <h3 className="text-sm sm:text-base font-black text-white leading-tight">{item.vendors?.name}</h3>
+                          <h3 className="text-sm sm:text-base font-black leading-tight" style={{ color: 'var(--text-primary)' }}>{item.vendors?.name}</h3>
                           <span className={`px-2 py-0.5 inline-flex text-[9px] uppercase tracking-widest font-black rounded-lg ${
                             liq 
                               ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
@@ -185,7 +200,7 @@ export default function LiquidationsPage() {
                             {liq ? 'Liquidado' : 'Pendiente'}
                           </span>
                         </div>
-                        <p className="text-xs font-bold text-zinc-500 mt-0.5">@{item.vendors?.alias}</p>
+                        <p className="text-xs font-bold mt-0.5" style={{ color: 'var(--text-muted)' }}>@{item.vendors?.alias}</p>
                       </div>
                     </div>
 
@@ -193,9 +208,9 @@ export default function LiquidationsPage() {
                     <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-8 w-full sm:w-auto">
                       {/* Lottery */}
                       <div className="hidden sm:block">
-                        <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Lotería</div>
-                        <div className="text-sm font-bold text-zinc-300 flex items-center gap-1.5">
-                          <Ticket size={14} className="text-zinc-500" />
+                        <div className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>Lotería</div>
+                        <div className="text-sm font-bold flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
+                          <Ticket size={14} style={{ color: 'var(--text-muted)' }} />
                           {item.lotteries?.name}
                         </div>
                       </div>
@@ -211,11 +226,11 @@ export default function LiquidationsPage() {
 
                       {/* Utility calculated */}
                       <div className="text-right sm:text-center min-w-[5rem]">
-                        <div className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">Utilidad</div>
+                        <div className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>Utilidad</div>
                         {liq ? (
-                          <div className="text-sm font-black text-white">${liq.profit_cop.toLocaleString()}</div>
+                          <div className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>${liq.profit_cop.toLocaleString()}</div>
                         ) : (
-                          <div className="text-sm font-bold text-zinc-600">---</div>
+                          <div className="text-sm font-bold" style={{ color: 'var(--text-decorative)' }}>---</div>
                         )}
                       </div>
 
@@ -224,8 +239,12 @@ export default function LiquidationsPage() {
                         onClick={() => handleReview(item)}
                         className={`flex items-center justify-center p-2.5 sm:px-4 sm:py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
                           liq
-                            ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-white border border-zinc-700'
+                            ? 'font-bold border transition-all'
                             : 'bg-indigo-500 text-white hover:bg-indigo-600 shadow-lg shadow-indigo-500/20'
+                        }
+                        style={liq ? { background: 'var(--bg-card-hover)', color: 'var(--text-secondary)', borderColor: 'var(--border-hover)' } : {}}
+                        onMouseEnter={(e) => { if(liq) { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--border-hover)' } }}
+                        onMouseLeave={(e) => { if(liq) { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'var(--bg-card-hover)' } }}
                         }`}
                       >
                         <Calculator size={16} className="sm:mr-2" />
@@ -243,46 +262,58 @@ export default function LiquidationsPage() {
       {/* Review Modal */}
       {reviewing && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 sm:p-8 border-b border-zinc-800 flex justify-between items-center bg-zinc-950/50">
+          <div 
+            className="rounded-3xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border animate-in fade-in zoom-in-95 duration-200"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+          >
+            <div className="p-6 sm:p-8 border-b flex justify-between items-center" style={{ background: 'var(--bg-page)', borderColor: 'var(--border)' }}>
               <div>
-                <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">Liquidación: {reviewing.vendors?.name}</h2>
-                <p className="text-zinc-500 font-bold text-xs sm:text-sm mt-1">{reviewing.lotteries?.name} - {reviewing.lotteries?.draw_time === 'midday' ? 'Mediodía' : 'Noche'}</p>
+                <h2 className="text-xl sm:text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Liquidación: {reviewing.vendors?.name}</h2>
+                <p className="font-bold text-xs sm:text-sm mt-1" style={{ color: 'var(--text-muted)' }}>{reviewing.lotteries?.name} - {reviewing.lotteries?.draw_time === 'midday' ? 'Mediodía' : 'Noche'}</p>
               </div>
-              <button onClick={() => setReviewing(null)} className="text-zinc-500 hover:text-white transition-colors p-1">
+              <button onClick={() => setReviewing(null)} className="transition-colors p-1" style={{ color: 'var(--text-muted)' }} onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text-primary)'} onMouseLeave={(e) => e.currentTarget.style.color = 'var(--text-muted)'}>
                 <XCircle size={28} />
               </button>
             </div>
             
             <div className="flex-1 overflow-y-auto p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
               <div>
-                <p className="text-[10px] font-black text-zinc-500 uppercase mb-4 tracking-widest">Evidencia Fotográfica</p>
+                <p className="text-[10px] font-black uppercase mb-4 tracking-widest" style={{ color: 'var(--text-muted)' }}>Evidencia Fotográfica</p>
                 {photoUrl ? (
-                  <div className="rounded-2xl overflow-hidden border border-zinc-800 bg-zinc-950 flex items-center justify-center h-64 sm:h-auto">
+                  <div 
+                    className="rounded-2xl overflow-hidden border flex items-center justify-center h-64 sm:h-auto"
+                    style={{ background: 'var(--bg-page)', borderColor: 'var(--border)' }}
+                  >
                     <img src={photoUrl} alt="Reporte" className="w-full h-full object-contain sm:h-auto" />
                   </div>
                 ) : (
-                  <div className="aspect-[3/4] sm:aspect-auto sm:h-64 bg-zinc-950 border border-zinc-800 border-dashed rounded-2xl flex flex-col items-center justify-center text-zinc-700">
-                    <Eye className="w-12 h-12 sm:w-16 sm:h-16 mb-4 text-zinc-800" />
-                    <p className="text-sm font-bold uppercase tracking-widest text-zinc-600">Sin foto disponible</p>
+                  <div 
+                    className="aspect-[3/4] sm:aspect-auto sm:h-64 border border-dashed rounded-2xl flex flex-col items-center justify-center"
+                    style={{ background: 'var(--bg-page)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+                  >
+                    <Eye className="w-12 h-12 sm:w-16 sm:h-16 mb-4" style={{ color: 'var(--border)' }} />
+                    <p className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--text-decorative)' }}>Sin foto disponible</p>
                   </div>
                 )}
               </div>
               
               <div className="space-y-6 sm:space-y-8 flex flex-col justify-center">
-                <div className="bg-zinc-950 p-6 rounded-2xl space-y-4 border border-zinc-800">
+                <div 
+                  className="p-6 rounded-2xl space-y-4 border"
+                  style={{ background: 'var(--bg-page)', borderColor: 'var(--border)' }}
+                >
                   <div className="flex justify-between items-center">
-                    <span className="text-zinc-500 font-black uppercase tracking-widest text-[10px] sm:text-xs">Fracciones Asignadas</span>
-                    <span className="font-black text-xl text-white">{reviewing.pieces_assigned}</span>
+                    <span className="font-black uppercase tracking-widest text-[10px] sm:text-xs" style={{ color: 'var(--text-muted)' }}>Fracciones Asignadas</span>
+                    <span className="font-black text-xl" style={{ color: 'var(--text-primary)' }}>{reviewing.pieces_assigned}</span>
                   </div>
-                  <div className="flex justify-between items-center pt-4 border-t border-zinc-800">
-                    <span className="text-zinc-500 font-black uppercase tracking-widest text-[10px] sm:text-xs">Utilidad x Fracción</span>
+                  <div className="flex justify-between items-center pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+                    <span className="font-black uppercase tracking-widest text-[10px] sm:text-xs" style={{ color: 'var(--text-muted)' }}>Utilidad x Fracción</span>
                     <span className="font-black text-xl text-indigo-400">${reviewing.lotteries?.piece_profit_cop.toLocaleString()}</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-black text-zinc-500 uppercase mb-3 tracking-widest ml-1">
+                  <label className="block text-[10px] font-black uppercase mb-3 tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>
                     Devueltas (No vendidas)
                   </label>
                   <input
@@ -290,14 +321,18 @@ export default function LiquidationsPage() {
                     value={unsold}
                     onChange={(e) => setUnsold(Math.max(0, parseInt(e.target.value) || 0))}
                     max={reviewing.pieces_assigned}
-                    className="w-full py-4 sm:py-5 px-6 bg-zinc-800 border border-zinc-700 rounded-xl text-2xl sm:text-3xl font-black text-center focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-white placeholder:text-zinc-600"
+                    className="w-full py-4 sm:py-5 px-6 border rounded-xl text-2xl sm:text-3xl font-black text-center focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                    style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
                   />
-                  <p className="text-center text-zinc-500 text-[10px] sm:text-xs font-bold mt-3 uppercase tracking-widest">
-                    {reviewing.pieces_assigned} asignadas - {unsold} devueltas = <span className="text-white">{reviewing.pieces_assigned - unsold} vendidas</span>
+                  <p className="text-center text-[10px] sm:text-xs font-bold mt-3 uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+                    {reviewing.pieces_assigned} asignadas - {unsold} devueltas = <span style={{ color: 'var(--text-primary)' }}>{reviewing.pieces_assigned - unsold} vendidas</span>
                   </p>
                 </div>
 
-                <div className="bg-indigo-500/10 border border-indigo-500/20 p-6 sm:p-8 rounded-2xl text-white">
+                <div 
+                  className="border p-6 sm:p-8 rounded-2xl"
+                  style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
+                >
                   <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">Total a Cobrar</p>
                   <p className="text-4xl sm:text-5xl font-black text-indigo-400">
                     ${((reviewing.pieces_assigned - unsold) * reviewing.lotteries?.piece_profit_cop).toLocaleString()}
