@@ -163,7 +163,7 @@ function LiquidationsContent() {
           <div className="space-y-6">
             {data.map((group: any, groupIdx: number) => {
               // Verificar si TODAS las asignaciones de este grupo ya están liquidadas
-              const allLiquidated = group.assignments.length > 0 && group.assignments.every((asg: any) => asg.liquidations?.[0]?.profit_cop != null);
+              const allLiquidated = group.assignments.length > 0 && group.assignments.every((asg: any) => asg.liquidations?.[0] != null);
               
               return (
                 <div 

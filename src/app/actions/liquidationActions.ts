@@ -2,6 +2,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { revalidatePath } from 'next/cache';
+import { unstable_noStore as noStore } from 'next/cache';
 import { logAuditEvent } from '@/app/actions/auditActions';
 import { getVendorSession } from '@/app/actions/vendorAuthActions';
 
@@ -102,6 +103,7 @@ export async function processLiquidation(data: {
  * para el panel de revisión del propietario/admin.
  */
 export async function getLiquidationsByDate(date: string) {
+  noStore();
   const { data, error } = await supabaseAdmin
     .from('daily_assignments')
     .select(`
