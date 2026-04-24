@@ -28,6 +28,7 @@ export default function LiquidationDetailPage() {
   
   // Submit error specifically for the final action
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [alreadyLiquidated, setAlreadyLiquidated] = useState(false);
 
   useEffect(() => {
     if (lightboxIndex !== null) document.getElementById('lightbox-overlay')?.focus();
@@ -62,6 +63,12 @@ export default function LiquidationDetailPage() {
     });
 
     setUnsoldMap(initialUnsold);
+
+    const allDone = found.assignments.every(
+      (asg: any) => asg.liquidations?.[0]?.reviewed_by_admin === true
+    );
+    setAlreadyLiquidated(allDone);
+
     const urls = await getReportPhotoUrls(reportIds);
     setPhotoUrls(urls);
     setLoading(false);
@@ -84,6 +91,7 @@ export default function LiquidationDetailPage() {
     });
 
     if (result.success) {
+      setAlreadyLiquidated(true);
       router.push(`/admin/liquidations?date=${date}`);
     } else {
       setSubmitError(result.error || 'Error al procesar la liquidación');
@@ -249,13 +257,24 @@ export default function LiquidationDetailPage() {
               </div>
             )}
 
-            <button
-              onClick={handleConfirm}
-              disabled={submitting}
-              className="w-full py-4 sm:py-5 bg-indigo-500 text-white rounded-xl font-black text-lg sm:text-xl tracking-wide hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/20 active:scale-95 disabled:opacity-60 flex items-center justify-center gap-3"
-            >
-              {submitting ? <><Loader2 className="animate-spin" size={22} /> Procesando...</> : <><CheckCircle2 size={22} /> CONFIRMAR LIQUIDACIÓN</>}
-            </button>
+            {alreadyLiquidated ? (
+              <div className="w-full py-4 sm:py-5 rounded-xl font-black text-lg sm:text-xl tracking-wide flex items-center justify-center gap-3 border border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
+                <CheckCircle2 size={22} />
+                VENDEDOR YA LIQUIDADO
+              </div>
+            ) : (
+              <button
+                onClick={handleConfirm}
+                disabled={submitting}
+                className="w-full py-4 sm:py-5 bg-indigo-500 text-white rounded-xl font-black text-lg sm:text-xl tracking-wide hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/20 active:scale-95 disabled:opacity-60 flex items-center justify-center gap-3"
+              >
+                {submitting ? (
+                  <><Loader2 className="animate-spin" size={22} /> Procesando...</>
+                ) : (
+                  <><CheckCircle2 size={22} /> CONFIRMAR LIQUIDACIÓN</>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>

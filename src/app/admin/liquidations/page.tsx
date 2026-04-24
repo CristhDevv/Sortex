@@ -28,6 +28,12 @@ function LiquidationsContent() {
     fetchData();
   }, [selectedDate]);
 
+  useEffect(() => {
+    const onFocus = () => fetchData();
+    window.addEventListener('focus', onFocus);
+    return () => window.removeEventListener('focus', onFocus);
+  }, [selectedDate]);
+
   const fetchData = async () => {
     setLoading(true);
     const liquidations = await getLiquidationsByDate(selectedDate);
