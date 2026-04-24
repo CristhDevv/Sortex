@@ -111,7 +111,7 @@ export async function getLiquidationsByDate(date: string) {
       vendors (id, name, alias),
       lotteries (name, draw_time, piece_profit_cop, piece_price_cop),
       reports (id, report_type),
-      liquidations (id, profit_cop, pieces_sold, pieces_unsold, pieces_assigned, reviewed_by_admin)
+      liquidations!assignment_id (id, profit_cop, pieces_sold, pieces_unsold, pieces_assigned, reviewed_by_admin)
     `)
     .eq('date', date)
     .order('created_at', { ascending: false });
