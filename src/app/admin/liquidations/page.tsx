@@ -36,6 +36,7 @@ function LiquidationsContent() {
 
   const fetchData = async () => {
     setLoading(true);
+    router.refresh();
     const liquidations = await getLiquidationsByDate(selectedDate);
     setData(liquidations);
     setLoading(false);
