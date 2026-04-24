@@ -35,16 +35,27 @@ function LiquidationsContent() {
     setLoading(false);
   };
 
+  const getFlatAssignments = () => {
+    const flat: any[] = [];
+    data.forEach((group: any) => {
+      group.assignments.forEach((asg: any) => {
+        flat.push({ vendor: group.vendor, asg });
+      });
+    });
+    return flat;
+  };
+
   const exportPDF = () => {
     const doc = new jsPDF() as any;
     doc.text(`Resumen de Liquidación - ${selectedDate}`, 14, 15);
 
-    const tableData = data.map((item) => {
-      const liq = item.liquidations?.[0];
+    const flat = getFlatAssignments();
+    const tableData = flat.map(({ vendor, asg }) => {
+      const liq = asg.liquidations?.[0];
       return [
-        item.vendors?.name || '',
-        item.lotteries?.name || '',
-        item.pieces_assigned,
+        vendor?.name || '',
+        asg.lotteries?.name || '',
+        asg.pieces_assigned,
         liq?.pieces_sold ?? 'Pend.',
         liq?.pieces_unsold ?? 'Pend.',
         liq ? `$${liq.profit_cop.toLocaleString()}` : 'Pend. Revisión',
@@ -61,12 +72,13 @@ function LiquidationsContent() {
   };
 
   const exportExcel = () => {
-    const tableData = data.map((item) => {
-      const liq = item.liquidations?.[0];
+    const flat = getFlatAssignments();
+    const tableData = flat.map(({ vendor, asg }) => {
+      const liq = asg.liquidations?.[0];
       return {
-        Vendedor: item.vendors?.name,
-        Lotería: item.lotteries?.name,
-        Asignadas: item.pieces_assigned,
+        Vendedor: vendor?.name,
+        Lotería: asg.lotteries?.name,
+        Asignadas: asg.pieces_assigned,
         Devueltas: liq?.pieces_unsold ?? 'Pendiente',
         Vendidas: liq?.pieces_sold ?? 'Pendiente',
         'Utilidad (COP)': liq?.profit_cop ?? 0,
@@ -80,7 +92,9 @@ function LiquidationsContent() {
   };
 
   const calculateTotal = () =>
-    data.reduce((sum, item) => sum + (item.liquidations?.[0]?.profit_cop || 0), 0);
+    data.reduce((sum, group) => 
+      sum + group.assignments.reduce((gSum: number, asg: any) => gSum + (asg.liquidations?.[0]?.profit_cop || 0), 0)
+    , 0);
 
   return (
     <div className="min-h-screen p-4 sm:p-6 space-y-6" style={{ background: 'var(--bg-page)' }}>
@@ -140,127 +154,89 @@ function LiquidationsContent() {
             </p>
           </div>
         ) : (
-          <div
-            className="rounded-2xl overflow-hidden shadow-2xl border"
-            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
-          >
-            <div className="divide-y divide-[var(--border)]">
-              {data.map((item) => {
-                const liq = item.liquidations?.[0];
-                const isMidday = item.lotteries?.draw_time === 'midday';
-
-                return (
-                  <div
-                    key={item.id}
-                    className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between transition-colors group gap-4"
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-card-hover)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                  >
-                    {/* Info Block */}
-                    <div className="flex items-center gap-4">
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border"
-                        style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)' }}
-                      >
-                        <User style={{ color: 'var(--text-muted)' }} size={20} />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3
-                            className="text-sm sm:text-base font-black leading-tight"
-                            style={{ color: 'var(--text-primary)' }}
-                          >
-                            {item.vendors?.name}
-                          </h3>
-                          <span
-                            className={`px-2 py-0.5 inline-flex text-[9px] uppercase tracking-widest font-black rounded-lg ${
-                              liq
-                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                                : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                            }`}
-                          >
-                            {liq ? 'Liquidado' : 'Pendiente'}
-                          </span>
-                        </div>
-                        <p className="text-xs font-bold mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                          @{item.vendors?.alias}
-                        </p>
-                      </div>
+          <div className="space-y-6">
+            {data.map((group: any, groupIdx: number) => {
+              // Verificar si TODAS las asignaciones de este grupo ya están liquidadas
+              const allLiquidated = group.assignments.length > 0 && group.assignments.every((asg: any) => asg.liquidations?.[0]?.profit_cop != null);
+              
+              return (
+                <div 
+                  key={groupIdx}
+                  className="rounded-2xl overflow-hidden shadow-2xl border"
+                  style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+                >
+                  {/* Header Vendedor */}
+                  <div className="p-4 border-b flex items-center gap-4 bg-indigo-500/5" style={{ borderColor: 'var(--border)' }}>
+                    <div className="w-10 h-10 bg-indigo-500/10 rounded-xl flex items-center justify-center flex-shrink-0 border border-indigo-500/20">
+                      <User className="text-indigo-400" size={20} />
                     </div>
-
-                    {/* Details Block */}
-                    <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-8 w-full sm:w-auto">
-                      <div className="hidden sm:block">
-                        <div
-                          className="text-[10px] font-black uppercase tracking-widest mb-0.5"
-                          style={{ color: 'var(--text-muted)' }}
-                        >
-                          Lotería
-                        </div>
-                        <div
-                          className="text-sm font-bold flex items-center gap-1.5"
-                          style={{ color: 'var(--text-secondary)' }}
-                        >
-                          <Ticket size={14} style={{ color: 'var(--text-muted)' }} />
-                          {item.lotteries?.name}
-                        </div>
-                      </div>
-
-                      <span
-                        className={`px-2.5 py-1 inline-flex text-[10px] uppercase tracking-widest font-black rounded-lg ${
-                          isMidday
-                            ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                            : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-                        }`}
-                      >
-                        {isMidday ? 'Día' : 'Noche'}
-                      </span>
-
-                      <div className="text-right sm:text-center min-w-[5rem]">
-                        <div
-                          className="text-[10px] font-black uppercase tracking-widest mb-0.5"
-                          style={{ color: 'var(--text-muted)' }}
-                        >
-                          Utilidad
-                        </div>
-                        {liq ? (
-                          <div className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>
-                            ${liq.profit_cop.toLocaleString()}
-                          </div>
-                        ) : (
-                          <div className="text-sm font-bold" style={{ color: 'var(--text-decorative)' }}>
-                            ---
-                          </div>
-                        )}
-                      </div>
-
-                      <button
-                        onClick={() =>
-                          router.push(`/admin/liquidations/${item.id}?date=${selectedDate}`)
-                        }
-                        className={`flex items-center justify-center p-2.5 sm:px-4 sm:py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                          liq
-                            ? 'border'
-                            : 'bg-indigo-500 text-white hover:bg-indigo-600 shadow-lg shadow-indigo-500/20'
-                        }`}
-                        style={
-                          liq
-                            ? {
-                                background: 'var(--bg-card-hover)',
-                                color: 'var(--text-secondary)',
-                                borderColor: 'var(--border-hover)',
-                              }
-                            : {}
-                        }
-                      >
-                        <Calculator size={16} className="sm:mr-2" />
-                        <span className="hidden sm:inline">{liq ? 'Revisar' : 'Liquidar'}</span>
-                      </button>
+                    <div>
+                      <div className="text-sm sm:text-base font-black leading-tight" style={{ color: 'var(--text-primary)' }}>{group.vendor?.name}</div>
+                      <div className="text-xs font-bold" style={{ color: 'var(--text-muted)' }}>@{group.vendor?.alias}</div>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+
+                  {/* Filas de Asignaciones */}
+                  <div className="divide-y divide-[var(--border)]">
+                    {group.assignments.map((asg: any) => {
+                      const liq = asg.liquidations?.[0];
+                      const isMidday = asg.lotteries?.draw_time === 'midday';
+
+                      return (
+                        <div 
+                          key={asg.id} 
+                          className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between transition-colors hover:bg-[var(--bg-card-hover)] gap-4"
+                        >
+                          <div className="flex-1">
+                            <div className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>Lotería</div>
+                            <div className="text-sm font-bold flex items-center gap-1.5" style={{ color: 'var(--text-secondary)' }}>
+                              <Ticket size={14} style={{ color: 'var(--text-muted)' }} />
+                              {asg.lotteries?.name}
+                            </div>
+                          </div>
+
+                          <div className="w-24 text-center">
+                            <span className={`px-2.5 py-1 inline-flex text-[10px] uppercase tracking-widest font-black rounded-lg ${
+                              isMidday ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
+                            }`}>
+                              {isMidday ? 'Día' : 'Noche'}
+                            </span>
+                          </div>
+                          
+                          <div className="w-24 text-center">
+                            <div className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>Frac.</div>
+                            <div className="text-sm font-black" style={{ color: 'var(--text-primary)' }}>{asg.pieces_assigned}</div>
+                          </div>
+
+                          <div className="w-24 text-right sm:text-center">
+                            <span className={`px-2 py-0.5 inline-flex text-[9px] uppercase tracking-widest font-black rounded-lg ${
+                              liq ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                            }`}>
+                              {liq ? 'Revisado' : 'Pendiente'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Footer Button - Consolidado */}
+                  <div className="p-4 border-t" style={{ borderColor: 'var(--border)' }}>
+                    <button
+                      onClick={() => router.push(`/admin/liquidations/${group.vendor.id}?date=${selectedDate}`)}
+                      className={`w-full flex items-center justify-center p-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
+                        allLiquidated
+                          ? 'border bg-[var(--bg-card-hover)] text-[var(--text-secondary)] border-[var(--border-hover)]'
+                          : 'bg-indigo-500 text-white hover:bg-indigo-600 shadow-lg shadow-indigo-500/20'
+                      }`}
+                    >
+                      <Calculator size={16} className="mr-2" />
+                      {allLiquidated ? 'Revisar Consolidado' : 'Liquidar Vendedor'}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

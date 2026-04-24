@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import { getLiquidationsByDate, processLiquidation } from '@/app/actions/liquidationActions';
 import { getReportPhotoUrls } from '@/app/actions/reportActions';
-import { Eye, ArrowLeft, CheckCircle2, Loader2, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Eye, ArrowLeft, CheckCircle2, Loader2, X, ChevronLeft, ChevronRight, Ticket, AlertCircle } from 'lucide-react';
 
 const IMG_FILTER = { filter: 'contrast(1.3) saturate(1.4) brightness(1.05)' };
 
@@ -13,23 +13,24 @@ export default function LiquidationDetailPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const id = params.id as string;
+  const id = params.id as string; // vendor_id
   const today = new Date().toISOString().split('T')[0];
   const date = searchParams.get('date') || today;
 
-  const [item, setItem] = useState<any>(null);
+  const [group, setGroup] = useState<any>(null); // { vendor, assignments[] }
+  const [unsoldMap, setUnsoldMap] = useState<Record<string, number>>({});
+  
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
-  const [unsold, setUnsold] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  
+  // Submit error specifically for the final action
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Focus lightbox overlay on open so keyboard events work
   useEffect(() => {
-    if (lightboxIndex !== null) {
-      document.getElementById('lightbox-overlay')?.focus();
-    }
+    if (lightboxIndex !== null) document.getElementById('lightbox-overlay')?.focus();
   }, [lightboxIndex]);
 
   useEffect(() => {
@@ -39,44 +40,53 @@ export default function LiquidationDetailPage() {
   const loadData = async () => {
     setLoading(true);
     setError(null);
+    setSubmitError(null);
 
-    const assignments = await getLiquidationsByDate(date);
-    const found = assignments.find((a: any) => a.id === id);
+    const groups = await getLiquidationsByDate(date) as any[];
+    const found = groups.find((g: any) => g.vendor?.id === id);
 
     if (!found) {
-      setError('No se encontró la asignación para la fecha indicada.');
+      setError('No se encontraron asignaciones para este vendedor en la fecha indicada.');
       setLoading(false);
       return;
     }
 
-    setItem(found);
-    setUnsold(found.liquidations?.[0]?.pieces_unsold || 0);
+    setGroup(found);
 
-    // Fetch all photos from report_photos for every report of this assignment
-    const reportIds = (found.reports ?? []).map((r: any) => r.id);
+    const initialUnsold: Record<string, number> = {};
+    const reportIds: string[] = [];
+
+    found.assignments.forEach((asg: any) => {
+      initialUnsold[asg.id] = asg.liquidations?.[0]?.pieces_unsold || 0;
+      (asg.reports ?? []).forEach((r: any) => reportIds.push(r.id));
+    });
+
+    setUnsoldMap(initialUnsold);
     const urls = await getReportPhotoUrls(reportIds);
     setPhotoUrls(urls);
-
     setLoading(false);
   };
 
   const handleConfirm = async () => {
-    if (!item || submitting) return;
+    if (!group || submitting) return;
     setSubmitting(true);
+    setSubmitError(null);
 
     const result = await processLiquidation({
-      assignment_id: item.id,
-      vendor_id: item.vendor_id,
+      vendor_id: id,
       date,
-      pieces_assigned: item.pieces_assigned,
-      pieces_unsold: unsold,
-      piece_profit_cop: item.lotteries.piece_profit_cop,
+      assignments: group.assignments.map((asg: any) => ({
+        assignment_id: asg.id,
+        pieces_assigned: asg.pieces_assigned,
+        pieces_unsold: unsoldMap[asg.id] ?? 0,
+        piece_price_cop: asg.lotteries?.piece_price_cop || 0,
+      })),
     });
 
     if (result.success) {
       router.push(`/admin/liquidations?date=${date}`);
     } else {
-      alert('Error al liquidar: ' + result.error);
+      setSubmitError(result.error || 'Error al procesar la liquidación');
       setSubmitting(false);
     }
   };
@@ -89,53 +99,44 @@ export default function LiquidationDetailPage() {
     );
   }
 
-  if (error || !item) {
+  if (error || !group) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: 'var(--bg-page)' }}>
-        <p className="text-rose-400 font-bold">{error || 'Asignación no encontrada.'}</p>
-        <button
-          onClick={() => router.push(`/admin/liquidations?date=${date}`)}
-          className="text-sm font-bold text-indigo-400 hover:underline flex items-center gap-2"
-        >
+        <p className="text-rose-400 font-bold">{error || 'Asignaciones no encontradas.'}</p>
+        <button onClick={() => router.push(`/admin/liquidations?date=${date}`)} className="text-sm font-bold text-indigo-400 hover:underline flex items-center gap-2">
           <ArrowLeft size={16} /> Volver a Liquidaciones
         </button>
       </div>
     );
   }
 
-  const isMidday = item.lotteries?.draw_time === 'midday';
-  const soldCount = item.pieces_assigned - unsold;
-  const totalProfit = soldCount * (item.lotteries?.piece_price_cop || 0);
+  const totalProfit = group.assignments.reduce((sum: number, asg: any) => {
+    const sold = asg.pieces_assigned - (unsoldMap[asg.id] ?? 0);
+    return sum + (sold * (asg.lotteries?.piece_price_cop || 0));
+  }, 0);
 
   return (
     <div className="min-h-screen p-4 sm:p-6 space-y-6" style={{ background: 'var(--bg-page)' }}>
-
       {/* Header */}
       <div className="flex items-center gap-4">
-        <button
-          onClick={() => router.push(`/admin/liquidations?date=${date}`)}
-          className="p-2.5 rounded-xl border transition-all hover:opacity-80"
-          style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}
-        >
+        <button onClick={() => router.push(`/admin/liquidations?date=${date}`)} className="p-2.5 rounded-xl border transition-all hover:opacity-80" style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
           <ArrowLeft size={20} />
         </button>
         <div>
           <h1 className="text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>
-            Liquidación: {item.vendors?.name}
+            Liquidación: {group.vendor?.name}
           </h1>
           <p className="text-sm font-bold mt-0.5" style={{ color: 'var(--text-muted)' }}>
-            {item.lotteries?.name} · {isMidday ? 'Mediodía' : 'Noche'} · {date}
+            @{group.vendor?.alias} · {date}
           </p>
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
-
         {/* Left — Photo gallery */}
         <div>
           <p className="text-[10px] font-black uppercase mb-4 tracking-widest" style={{ color: 'var(--text-muted)' }}>
-            Evidencia Fotográfica {photoUrls.length > 0 && `(${photoUrls.length})`}
+            Evidencia Fotográfica Consolidada {photoUrls.length > 0 && `(${photoUrls.length})`}
           </p>
 
           {photoUrls.length > 0 ? (
@@ -173,97 +174,89 @@ export default function LiquidationDetailPage() {
         </div>
 
         {/* Right — Form */}
-        <div className="space-y-6 flex flex-col justify-center">
+        <div className="space-y-6 flex flex-col">
+          
+          {group.assignments.map((asg: any) => {
+            const isMidday = asg.lotteries?.draw_time === 'midday';
+            const currentUnsold = unsoldMap[asg.id] ?? 0;
+            const soldCount = asg.pieces_assigned - currentUnsold;
+            const rowProfit = soldCount * (asg.lotteries?.piece_price_cop || 0);
 
-          {/* Stats Card */}
-          <div
-            className="p-6 rounded-2xl space-y-4 border"
-            style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
-          >
-            <div className="flex justify-between items-center">
-              <span className="font-black uppercase tracking-widest text-[10px] sm:text-xs" style={{ color: 'var(--text-muted)' }}>
-                Fracciones Asignadas
-              </span>
-              <span className="font-black text-xl" style={{ color: 'var(--text-primary)' }}>
-                {item.pieces_assigned}
-              </span>
-            </div>
-            <div className="flex justify-between items-center pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
-              <span className="font-black uppercase tracking-widest text-[10px] sm:text-xs" style={{ color: 'var(--text-muted)' }}>
-                Utilidad x Fracción
-              </span>
-              <span className="font-black text-xl text-indigo-400">
-                ${item.lotteries?.piece_profit_cop.toLocaleString()}
-              </span>
-            </div>
-          </div>
+            return (
+              <div 
+                key={asg.id} 
+                className="p-6 rounded-2xl space-y-4 border"
+                style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}
+              >
+                <div className="flex justify-between items-center border-b pb-4" style={{ borderColor: 'var(--border)' }}>
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Lotería</div>
+                    <div className="text-base font-black flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                      <Ticket size={16} style={{ color: 'var(--text-muted)' }} />
+                      {asg.lotteries?.name}
+                      <span className={`px-2 py-0.5 inline-flex text-[9px] uppercase tracking-widest font-black rounded-lg ${isMidday ? 'bg-amber-500/10 text-amber-400' : 'bg-indigo-500/10 text-indigo-400'}`}>
+                        {isMidday ? 'Día' : 'Noche'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Asignadas</div>
+                    <div className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>{asg.pieces_assigned}</div>
+                  </div>
+                </div>
 
-          {/* Unsold Input */}
-          <div>
-            <label
-              className="block text-[10px] font-black uppercase mb-3 tracking-widest ml-1"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              Devueltas (No vendidas)
-            </label>
-            <input
-              type="number"
-              value={unsold === 0 ? '' : unsold}
-              onChange={(e) => {
-                const val = e.target.value;
-                setUnsold(val === '' ? 0 : Math.max(0, Math.min(item.pieces_assigned, parseInt(val) || 0)));
-              }}
-              onBlur={() => { if (isNaN(unsold)) setUnsold(0); }}
-              max={item.pieces_assigned}
-              min={0}
-              placeholder="0"
-              className="w-full py-4 sm:py-5 px-6 border rounded-xl text-2xl sm:text-3xl font-black text-center focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-              style={{
-                background: 'var(--bg-card-hover)',
-                borderColor: 'var(--border-hover)',
-                color: 'var(--text-primary)',
-              }}
-            />
-            <p
-              className="text-center text-[10px] sm:text-xs font-bold mt-3 uppercase tracking-widest"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              {item.pieces_assigned} asignadas &minus; {unsold} devueltas ={' '}
-              <span style={{ color: 'var(--text-primary)' }}>{soldCount} vendidas</span>
-            </p>
-          </div>
+                <div>
+                  <label className="block text-[10px] font-black uppercase mb-3 tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>
+                    Devueltas (No vendidas)
+                  </label>
+                  <input
+                    type="number"
+                    value={currentUnsold === 0 ? '' : currentUnsold}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setUnsoldMap(prev => ({
+                        ...prev,
+                        [asg.id]: val === '' ? 0 : Math.max(0, Math.min(asg.pieces_assigned, parseInt(val) || 0))
+                      }));
+                    }}
+                    onBlur={() => { 
+                      if (isNaN(currentUnsold)) setUnsoldMap(prev => ({ ...prev, [asg.id]: 0 }));
+                    }}
+                    max={asg.pieces_assigned}
+                    min={0}
+                    placeholder="0"
+                    className="w-full py-3 px-4 border rounded-xl text-xl font-black text-center focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
+                  />
+                  <div className="flex justify-between items-center mt-3 text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
+                    <span>Vendidas: <span style={{ color: 'var(--text-primary)' }}>{soldCount}</span></span>
+                    <span>Subtotal: <span className="text-indigo-400">${rowProfit.toLocaleString()}</span></span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
 
-          {/* Total to Collect */}
-          <div
-            className="border p-6 sm:p-8 rounded-2xl"
-            style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)' }}
-          >
-            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">
-              Total a Cobrar
-            </p>
-            <p className="text-4xl sm:text-5xl font-black text-indigo-400">
-              ${totalProfit.toLocaleString()}
-            </p>
-          </div>
-
-          {/* Confirm Button */}
-          <button
-            onClick={handleConfirm}
-            disabled={submitting}
-            className="w-full py-4 sm:py-5 bg-indigo-500 text-white rounded-xl font-black text-lg sm:text-xl tracking-wide hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/20 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100 flex items-center justify-center gap-3"
-          >
-            {submitting ? (
-              <>
-                <Loader2 className="animate-spin" size={22} />
-                Procesando...
-              </>
-            ) : (
-              <>
-                <CheckCircle2 size={22} />
-                CONFIRMAR LIQUIDACIÓN
-              </>
+          {/* Gran Total y Botón */}
+          <div className="border p-6 sm:p-8 rounded-2xl shadow-2xl" style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)' }}>
+            <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">Gran Total a Cobrar</p>
+            <p className="text-4xl sm:text-5xl font-black text-indigo-400 mb-6">${totalProfit.toLocaleString()}</p>
+            
+            {submitError && (
+              <div className="mb-4 p-4 rounded-xl flex items-start gap-3 bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                <AlertCircle className="shrink-0 mt-0.5" size={18} />
+                <p className="text-sm font-bold leading-tight">{submitError}</p>
+              </div>
             )}
-          </button>
+
+            <button
+              onClick={handleConfirm}
+              disabled={submitting}
+              className="w-full py-4 sm:py-5 bg-indigo-500 text-white rounded-xl font-black text-lg sm:text-xl tracking-wide hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-500/20 active:scale-95 disabled:opacity-60 flex items-center justify-center gap-3"
+            >
+              {submitting ? <><Loader2 className="animate-spin" size={22} /> Procesando...</> : <><CheckCircle2 size={22} /> CONFIRMAR LIQUIDACIÓN</>}
+            </button>
+          </div>
         </div>
       </div>
 
