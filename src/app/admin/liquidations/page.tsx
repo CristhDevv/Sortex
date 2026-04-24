@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { getLiquidationsByDate } from '@/app/actions/liquidationActions';
 import {
@@ -9,12 +9,13 @@ import {
   Calculator,
   User,
   Ticket,
+  Loader2,
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
-export default function LiquidationsPage() {
+function LiquidationsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialDate = searchParams.get('date') || new Date().toISOString().split('T')[0];
@@ -264,5 +265,17 @@ export default function LiquidationsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function LiquidationsPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[200px]" style={{ background: 'var(--bg-page)' }}>
+        <Loader2 className="animate-spin text-indigo-400" size={28} />
+      </div>
+    }>
+      <LiquidationsContent />
+    </Suspense>
   );
 }
