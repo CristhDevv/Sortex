@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { 
   createAssignment, 
   getAssignmentsByDate, 
-  deleteAssignment 
+  deleteAssignment,
+  updateAssignment,
 } from '@/app/actions/assignmentActions';
 import { getLotteries } from '@/app/actions/lotteryActions';
 import { getVendors } from '@/app/actions/vendorAuthActions';
@@ -18,7 +19,11 @@ import {
   Calendar,
   User,
   Ticket,
-  Clock
+  Clock,
+  Pencil,
+  Check,
+  X,
+  Loader2,
 } from 'lucide-react';
 import { format, toZonedTime } from 'date-fns-tz';
 
@@ -40,6 +45,12 @@ export default function AssignmentsPage() {
   });
   const [piecesAssigned, setPiecesAssigned] = useState(1);
   const [formLoading, setFormLoading] = useState(false);
+
+  // Inline edit states
+  const [editingId, setEditingId]             = useState<string | null>(null);
+  const [editingPieces, setEditingPieces]     = useState<number>(0);
+  const [editingLoading, setEditingLoading]   = useState(false);
+  const [editingError, setEditingError]       = useState<string | null>(null);
 
   useEffect(() => {
     fetchInitialData();
@@ -84,7 +95,6 @@ export default function AssignmentsPage() {
     } else {
       setShowModal(false);
       fetchAssignments();
-      // Reset some form fields
       setPiecesAssigned(1);
     }
     setFormLoading(false);
@@ -99,6 +109,32 @@ export default function AssignmentsPage() {
     } else {
       alert('Error: ' + result.error);
     }
+  };
+
+  const handleEditStart = (asg: any) => {
+    setEditingId(asg.id);
+    setEditingPieces(asg.pieces_assigned);
+    setEditingError(null);
+  };
+
+  const handleEditCancel = () => {
+    setEditingId(null);
+    setEditingError(null);
+  };
+
+  const handleEditConfirm = async () => {
+    if (!editingId) return;
+    setEditingLoading(true);
+    setEditingError(null);
+
+    const result = await updateAssignment(editingId, editingPieces);
+    if (result.error) {
+      setEditingError(result.error);
+    } else {
+      setEditingId(null);
+      fetchAssignments();
+    }
+    setEditingLoading(false);
   };
 
   return (
@@ -150,15 +186,17 @@ export default function AssignmentsPage() {
         >
           <div className="divide-y divide-[var(--border)]">
             {assignments.map((asg) => {
-              const middayReport = asg.reports?.find((r: any) => r.report_type === 'midday');
-              const nightReport = asg.reports?.find((r: any) => r.report_type === 'night');
-              
+              const middayReport  = asg.reports?.find((r: any) => r.report_type === 'midday');
+              const nightReport   = asg.reports?.find((r: any) => r.report_type === 'night');
+              const isLiquidated  = asg.liquidations?.some((l: any) => l.profit_cop !== null);
+              const isEditing     = editingId === asg.id;
+
               return (
                 <div 
                   key={asg.id} 
                   className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between transition-colors group gap-4"
-                  onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-card-hover)' }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-card-hover)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                 >
                   {/* Info block */}
                   <div className="flex items-center gap-4">
@@ -191,13 +229,33 @@ export default function AssignmentsPage() {
                       {asg.lotteries?.draw_time === 'midday' ? 'Día' : 'Noche'}
                     </span>
 
-                    {/* Pieces */}
-                    <div className="text-center min-w-[3rem]">
+                    {/* Pieces — editable inline */}
+                    <div className="text-center min-w-[5rem]">
                       <div className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>Frac.</div>
-                      <div className="text-base font-black" style={{ color: 'var(--text-primary)' }}>{asg.pieces_assigned}</div>
+                      {isEditing ? (
+                        <div className="flex flex-col items-center gap-1">
+                          <input
+                            type="number"
+                            value={editingPieces}
+                            onChange={(e) => {
+                              const val = parseInt(e.target.value);
+                              setEditingPieces(isNaN(val) ? 1 : Math.max(1, val));
+                            }}
+                            min={1}
+                            autoFocus
+                            className="w-16 text-center font-black border rounded-lg py-1 px-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                            style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
+                          />
+                          {editingError && (
+                            <p className="text-rose-400 text-[10px] font-bold leading-tight max-w-[110px] text-center">{editingError}</p>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-base font-black" style={{ color: 'var(--text-primary)' }}>{asg.pieces_assigned}</div>
+                      )}
                     </div>
 
-                    {/* Reports */}
+                    {/* Reports status */}
                     <div 
                       className="flex gap-1.5 items-center p-1.5 rounded-xl border"
                       style={{ background: 'var(--bg-page)', borderColor: 'var(--border)' }}
@@ -211,13 +269,50 @@ export default function AssignmentsPage() {
                     </div>
 
                     {/* Actions */}
-                    <button 
-                      onClick={() => handleDelete(asg.id)}
-                      className="p-2.5 rounded-xl text-rose-400 hover:bg-rose-500/10 transition-all border border-transparent hover:border-rose-500/20 flex-shrink-0"
-                      title="Eliminar"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    {isEditing ? (
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={handleEditConfirm}
+                          disabled={editingLoading}
+                          title="Confirmar"
+                          className="p-2 rounded-xl text-emerald-400 hover:bg-emerald-500/10 border border-transparent hover:border-emerald-500/20 transition-all disabled:opacity-50"
+                        >
+                          {editingLoading
+                            ? <Loader2 size={18} className="animate-spin" />
+                            : <Check size={18} />}
+                        </button>
+                        <button
+                          onClick={handleEditCancel}
+                          disabled={editingLoading}
+                          title="Cancelar"
+                          className="p-2 rounded-xl text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-all disabled:opacity-50"
+                        >
+                          <X size={18} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={() => handleEditStart(asg)}
+                          disabled={isLiquidated}
+                          title={isLiquidated ? 'Ya liquidada' : 'Editar fracciones'}
+                          className={`p-2.5 rounded-xl border border-transparent transition-all ${
+                            isLiquidated
+                              ? 'opacity-30 cursor-not-allowed text-indigo-400'
+                              : 'text-indigo-400 hover:bg-indigo-500/10 hover:border-indigo-500/20'
+                          }`}
+                        >
+                          <Pencil size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(asg.id)}
+                          className="p-2.5 rounded-xl text-rose-400 hover:bg-rose-500/10 transition-all border border-transparent hover:border-rose-500/20 flex-shrink-0"
+                          title="Eliminar"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -226,7 +321,7 @@ export default function AssignmentsPage() {
         </div>
       )}
 
-      {/* Modal */}
+      {/* Modal — Nueva Asignación */}
       {showModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div 
