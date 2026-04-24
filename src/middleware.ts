@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
   // Protect /owner routes
   if (path.startsWith('/owner') && path !== '/owner/login') {
     if (!ownerSession || ownerSession.role !== 'owner') {
-      return NextResponse.redirect(new URL('/owner/login', request.url));
+      return NextResponse.redirect(new URL('/', request.url));
     }
   }
 
@@ -34,14 +34,14 @@ export async function middleware(request: NextRequest) {
     const isAdmin = adminSession && (adminSession.role === 'admin' || adminSession.role === 'owner');
     const isOwnerAccessing = ownerSession && ownerSession.role === 'owner';
     if (!isAdmin && !isOwnerAccessing) {
-      return NextResponse.redirect(new URL('/login', request.url));
+      return NextResponse.redirect(new URL('/', request.url));
     }
   }
 
   // Protect /vendor routes
   if (path.startsWith('/vendor') && path !== '/vendor/login') {
     if (!vendorSession || vendorSession.role !== 'vendor') {
-      return NextResponse.redirect(new URL('/vendor/login', request.url));
+      return NextResponse.redirect(new URL('/', request.url));
     }
   }
 

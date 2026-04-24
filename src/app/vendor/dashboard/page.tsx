@@ -43,7 +43,7 @@ export default function VendorDashboard() {
 
   const handleLogout = async () => {
     await vendorLogout();
-    router.push('/vendor/login');
+    router.push('/');
   };
 
   if (loading) return (
