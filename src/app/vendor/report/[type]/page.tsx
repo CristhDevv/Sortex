@@ -23,6 +23,7 @@ function ReportContent() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
 
   // Cleanup ObjectURLs on previews change or unmount to prevent memory leaks
   useEffect(() => {
@@ -50,10 +51,24 @@ function ReportContent() {
         .eq('id', assignmentId)
         .single();
 
-      if (data) setAssignment(data);
+      if (data) {
+        setAssignment(data);
+
+        // Verificación de reporte duplicado
+        const { data: existingReport } = await supabase
+          .from('reports')
+          .select('id')
+          .eq('assignment_id', assignmentId)
+          .eq('report_type', reportType)
+          .maybeSingle();
+
+        if (existingReport) {
+          setAlreadySubmitted(true);
+        }
+      }
     }
     init();
-  }, [assignmentId, router]);
+  }, [assignmentId, reportType, router]);
 
   const handlePhotoCapture = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -90,7 +105,11 @@ function ReportContent() {
   };
 
   const handleSubmit = async () => {
-    if (photos.length === 0 || !assignment) return;
+    if (photos.length < 1 || !assignment) return;
+    if (photos.length < 3) {
+      setError('Debes subir al menos 3 fotos antes de enviar.');
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -115,6 +134,22 @@ function ReportContent() {
     }
   };
 
+  if (alreadySubmitted) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center" style={{ background: 'var(--bg-page)' }}>
+        <h2 className="text-2xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>Ya enviaste este reporte</h2>
+        <p className="mt-2 font-bold text-sm" style={{ color: 'var(--text-muted)' }}>Si crees que es un error, contacta a tu administrador.</p>
+        <button
+          onClick={() => router.push('/vendor/dashboard')}
+          className="mt-6 px-6 py-3 rounded-xl font-bold text-sm"
+          style={{ background: 'var(--accent)', color: 'white' }}
+        >
+          Volver al inicio
+        </button>
+      </div>
+    );
+  }
+
   if (success) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center" style={{ background: 'var(--bg-page)' }}>
@@ -123,6 +158,13 @@ function ReportContent() {
         </div>
         <h1 className="text-3xl font-black tracking-tight" style={{ color: 'var(--text-primary)' }}>¡ENVIADO!</h1>
         <p className="mt-2 font-bold text-sm" style={{ color: 'var(--text-muted)' }}>Tu reporte se guardó correctamente.</p>
+        <button
+          onClick={() => router.push('/vendor/dashboard')}
+          className="mt-6 px-6 py-3 rounded-xl font-bold text-sm"
+          style={{ background: 'var(--accent)', color: 'white' }}
+        >
+          Ir al inicio
+        </button>
       </div>
     );
   }
