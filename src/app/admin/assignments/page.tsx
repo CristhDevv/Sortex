@@ -188,7 +188,7 @@ export default function AssignmentsPage() {
             {assignments.map((asg) => {
               const middayReport  = asg.reports?.find((r: any) => r.report_type === 'midday');
               const nightReport   = asg.reports?.find((r: any) => r.report_type === 'night');
-              const isLiquidated  = asg.liquidations?.some((l: any) => l.profit_cop !== null);
+              const isLiquidated  = Array.isArray(asg.liquidations) && asg.liquidations.some((l: any) => l.profit_cop !== null);
               const isEditing     = editingId === asg.id;
 
               return (
