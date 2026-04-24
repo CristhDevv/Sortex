@@ -73,7 +73,7 @@ export async function getLiquidationsByDate(date: string) {
     .select(`
       *,
       vendors (name, alias),
-      lotteries (name, draw_time, piece_profit_cop),
+      lotteries (name, draw_time, piece_profit_cop, piece_price_cop),
       reports (*),
       liquidations (*)
     `)
