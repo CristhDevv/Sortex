@@ -178,7 +178,6 @@ export default function OwnerUsersPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ej: Juan Pérez"
                   required
-                  required
                   className="w-full px-6 py-4 border rounded-2xl font-bold focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all"
                   style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
                 />
@@ -191,7 +190,6 @@ export default function OwnerUsersPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="juan@sortex.com"
                   required
-                  required
                   className="w-full px-6 py-4 border rounded-2xl font-bold focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all"
                   style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}
                 />
@@ -203,7 +201,6 @@ export default function OwnerUsersPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  required
                   required
                   className="w-full px-6 py-4 border rounded-2xl font-bold focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all"
                   style={{ background: 'var(--bg-card-hover)', borderColor: 'var(--border-hover)', color: 'var(--text-primary)' }}

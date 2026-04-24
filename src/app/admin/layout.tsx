@@ -50,8 +50,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [session, setSession] = useState<{ role: string; name: string } | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     getActiveSession().then(setSession);
   }, []);
 
@@ -136,8 +138,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-card-hover)'; e.currentTarget.style.color = 'var(--text-primary)' }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)' }}
           >
-            {theme === 'dark' ? <Moon className="w-5 h-5 mr-3" /> : <Sun className="w-5 h-5 mr-3" />}
-            <span className="font-bold text-sm">{theme === 'dark' ? 'Modo oscuro' : 'Modo claro'}</span>
+            {mounted ? (theme === 'dark' ? <Moon className="w-5 h-5 mr-3" /> : <Sun className="w-5 h-5 mr-3" />) : <span className="w-5 h-5 mr-3" />}
+            <span className="font-bold text-sm">
+              {mounted ? (theme === 'dark' ? 'Modo oscuro' : 'Modo claro') : 'Cargando...'}
+            </span>
           </button>
           <button
             onClick={handleLogout}

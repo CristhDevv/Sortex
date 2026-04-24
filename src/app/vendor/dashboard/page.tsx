@@ -18,10 +18,14 @@ export default function VendorDashboard() {
   const [vendor, setVendor] = useState<any>(null);
   const [assignments, setAssignments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    setMounted(true);
+    fetchData(); 
+  }, []);
 
   const fetchData = async () => {
     const session = await getVendorSession();
@@ -71,7 +75,7 @@ export default function VendorDashboard() {
             onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-card-hover)'; e.currentTarget.style.color = 'var(--text-primary)' }}
             onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--bg-card)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
           >
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            {mounted ? (theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />) : <div className="w-5 h-5" />}
           </button>
           <button
             onClick={handleLogout}
