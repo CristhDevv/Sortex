@@ -141,8 +141,8 @@ export async function getVendorHistory(vendorId: string) {
     return null;
   }
 
-  // 2. Obtener historial de asignaciones con sus liquidaciones y loterías
-  const { data: history, error: hError } = await supabaseAdmin
+  // 2. Obtener historial de asignaciones
+  const { data: assignments, error: hError } = await supabaseAdmin
     .from('daily_assignments')
     .select(`
       id,
@@ -151,13 +151,6 @@ export async function getVendorHistory(vendorId: string) {
       lotteries!inner (
         name,
         draw_time
-      ),
-      liquidations (
-        pieces_assigned,
-        pieces_sold,
-        pieces_unsold,
-        profit_cop,
-        reviewed_by_admin
       )
     `)
     .eq('vendor_id', vendorId)
@@ -167,6 +160,24 @@ export async function getVendorHistory(vendorId: string) {
     console.error('Error fetching vendor history:', hError);
     return null;
   }
+
+  // 2b. Obtener liquidaciones del vendedor por separado
+  const { data: liquidations, error: liqError } = await supabaseAdmin
+    .from('liquidations')
+    .select('assignment_id, pieces_assigned, pieces_sold, pieces_unsold, profit_cop, reviewed_by_admin')
+    .eq('vendor_id', vendorId);
+
+  if (liqError) {
+    console.error('Error fetching vendor liquidations:', liqError);
+    return null;
+  }
+
+  const liqMap = new Map(liquidations.map(l => [l.assignment_id, l]));
+
+  const history = assignments.map(asg => ({
+    ...asg,
+    liquidations: liqMap.has(asg.id) ? [liqMap.get(asg.id)] : []
+  }));
 
   // 3. Calcular totales acumulados basados solo en registros liquidados
   const totals = history.reduce((acc, curr) => {
