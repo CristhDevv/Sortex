@@ -104,25 +104,41 @@ export async function processLiquidation(data: {
  */
 export async function getLiquidationsByDate(date: string) {
   noStore();
-  const { data, error } = await supabaseAdmin
+
+  const { data: assignments, error: asgError } = await supabaseAdmin
     .from('daily_assignments')
     .select(`
       *,
       vendors (id, name, alias),
       lotteries (name, draw_time, piece_profit_cop, piece_price_cop),
-      reports (id, report_type),
-      liquidations!assignment_id (id, profit_cop, pieces_sold, pieces_unsold, pieces_assigned, reviewed_by_admin)
+      reports (id, report_type)
     `)
     .eq('date', date)
     .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching liquidations by date:', error);
+  if (asgError) {
+    console.error('Error fetching assignments:', asgError);
     return [];
   }
 
-  // Agrupar por vendor_id
-  const grouped = data.reduce((acc, asg) => {
+  const { data: liquidations, error: liqError } = await supabaseAdmin
+    .from('liquidations')
+    .select('id, assignment_id, profit_cop, pieces_sold, pieces_unsold, pieces_assigned, reviewed_by_admin')
+    .eq('date', date);
+
+  if (liqError) {
+    console.error('Error fetching liquidations:', liqError);
+    return [];
+  }
+
+  const liqMap = new Map(liquidations.map(l => [l.assignment_id, l]));
+
+  const merged = assignments.map(asg => ({
+    ...asg,
+    liquidations: liqMap.has(asg.id) ? [liqMap.get(asg.id)] : []
+  }));
+
+  const grouped = merged.reduce((acc, asg) => {
     const key = asg.vendor_id;
     if (!acc[key]) acc[key] = { vendor: asg.vendors, assignments: [] };
     acc[key].assignments.push(asg);
